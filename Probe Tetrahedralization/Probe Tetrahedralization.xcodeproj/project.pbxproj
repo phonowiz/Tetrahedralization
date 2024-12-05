@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		B920D0492D02523D00814FC1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B920D0482D02523D00814FC1 /* main.cpp */; };
+		B920D0512D0264CF00814FC1 /* tetgen.cxx in Sources */ = {isa = PBXBuildFile; fileRef = B920D0502D0264CF00814FC1 /* tetgen.cxx */; };
+		B920D0542D0265C800814FC1 /* predicates.cxx in Sources */ = {isa = PBXBuildFile; fileRef = B920D0532D0265C800814FC1 /* predicates.cxx */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +27,9 @@
 /* Begin PBXFileReference section */
 		B920D0452D02523D00814FC1 /* Probe Tetrahedralization */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Probe Tetrahedralization"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B920D0482D02523D00814FC1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		B920D04F2D0264CF00814FC1 /* tetgen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tetgen.h; sourceTree = "<group>"; };
+		B920D0502D0264CF00814FC1 /* tetgen.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tetgen.cxx; sourceTree = "<group>"; };
+		B920D0532D0265C800814FC1 /* predicates.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = predicates.cxx; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +46,7 @@
 		B920D03C2D02523D00814FC1 = {
 			isa = PBXGroup;
 			children = (
+				B920D0522D0264E700814FC1 /* tetgen1.6.0 */,
 				B920D0472D02523D00814FC1 /* Probe Tetrahedralization */,
 				B920D0462D02523D00814FC1 /* Products */,
 			);
@@ -60,6 +66,16 @@
 				B920D0482D02523D00814FC1 /* main.cpp */,
 			);
 			path = "Probe Tetrahedralization";
+			sourceTree = "<group>";
+		};
+		B920D0522D0264E700814FC1 /* tetgen1.6.0 */ = {
+			isa = PBXGroup;
+			children = (
+				B920D0532D0265C800814FC1 /* predicates.cxx */,
+				B920D0502D0264CF00814FC1 /* tetgen.cxx */,
+				B920D04F2D0264CF00814FC1 /* tetgen.h */,
+			);
+			path = tetgen1.6.0;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -119,7 +135,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B920D0512D0264CF00814FC1 /* tetgen.cxx in Sources */,
 				B920D0492D02523D00814FC1 /* main.cpp in Sources */,
+				B920D0542D0265C800814FC1 /* predicates.cxx in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,7 +261,16 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5662ABGNXL;
 				ENABLE_HARDENED_RUNTIME = YES;
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = (
+					"TETLIBRARY=1",
+					"$(inherited)",
+				);
+				"HEADER_SEARCH_PATHS[arch=*]" = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/Probe Tetrahedralization\"",
+					"\"$(SRCROOT)/tetgen1.6.0\"",
+				);
 			};
 			name = Debug;
 		};
@@ -253,7 +280,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5662ABGNXL;
 				ENABLE_HARDENED_RUNTIME = YES;
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = "TETLIBRARY=1";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/Probe Tetrahedralization\"",
+					"\"$(SRCROOT)/tetgen1.6.0\"",
+				);
 			};
 			name = Release;
 		};
