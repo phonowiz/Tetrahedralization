@@ -1264,7 +1264,7 @@ bool tetgenio::load_off(char* filebasename)
   char infilename[FILENAMESIZE];
   char buffer[INPUTLINESIZE];
   char *bufferp;
-  double *coord;
+  REAL *coord;
   int nverts = 0, iverts = 0;
   int nfaces = 0, ifaces = 0;
   int nedges = 0;
@@ -1425,7 +1425,7 @@ bool tetgenio::load_ply(char* filebasename)
   char infilename[FILENAMESIZE];
   char buffer[INPUTLINESIZE];
   char *bufferp, *str;
-  double *coord;
+  REAL *coord;
   int endheader = 0, format = 0;
   int nverts = 0, iverts = 0;
   int nfaces = 0, ifaces = 0;
@@ -1827,7 +1827,7 @@ bool tetgenio::load_medit(char* filebasename, int istetmesh)
   char infilename[FILENAMESIZE];
   char buffer[INPUTLINESIZE];
   char *bufferp, *str;
-  double *coord;
+  REAL *coord;
   int *tmpfmlist;
   int dimension = 0;
   int nverts = 0;
@@ -2185,7 +2185,7 @@ bool tetgenio::load_vtk(char* filebasename)
   char line[INPUTLINESIZE];
   char mode[128], id[256], fmt[64];
   char *bufferp;
-  double *coord;
+  REAL *coord;
   float _x, _y, _z;
   int nverts = 0;
   int nfaces = 0;
@@ -2653,7 +2653,7 @@ void tetgenio::save_edges(char* filebasename)
 //                                                                            //
 //============================================================================//
 
-void tetgenio::save_neighbors(char* filebasename)
+void tetgenio::save_neighbors(const char* filebasename)
 {
   FILE *fout;
   char outneighborfilename[FILENAMESIZE];
@@ -3071,7 +3071,7 @@ void tetgenbehavior::usage()
 //                                                                            //
 //============================================================================//
 
-bool tetgenbehavior::parse_commandline(int argc, char **argv)
+bool tetgenbehavior::parse_commandline(int argc, const char **argv)
 {
   int startindex;
   int increment;
@@ -23765,8 +23765,8 @@ void tetgenmesh::carveholes()
       }
       int count = 0, hcount = 0, scount = 0;
       int shift = io.firstnumber > 0 ? -1 : 0;
-      double *p1, *p2, *p3, *p4;
-      double searchpt[3];
+      REAL *p1, *p2, *p3, *p4;
+      REAL searchpt[3];
       // Randomly select a tet.
       i = randomnation(io.numberoftetrahedra);
       //for (i = 0; i < io.numberoftetrahedra; i++) {
@@ -36512,7 +36512,7 @@ int main(int argc, char *argv[])
 //                                                                            //
 //============================================================================//
 
-void tetrahedralize(char *switches, tetgenio *in, tetgenio *out, 
+void tetrahedralize(const char *switches, tetgenio *in, tetgenio *out,
                     tetgenio *addin, tetgenio *bgmin)
 
 #endif // not TETLIBRARY

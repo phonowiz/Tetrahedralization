@@ -59,7 +59,7 @@
 //   Alternatively, one can use the single-precision (32 bit) 'float' if the
 //   memory is limited.
 
-#define REAL double  // #define REAL float
+#define REAL float  // #define REAL float
 
 // The maximum number of characters in a file name (including the null).
 
@@ -356,7 +356,7 @@ public:
   void save_elements(const char*);
   void save_faces(const char*);
   void save_edges(char*);
-  void save_neighbors(char*);
+  void save_neighbors(const char*);
   void save_poly(const char*);
   void save_faces2smesh(char*);
 
@@ -731,8 +731,8 @@ public:
   void usage();
 
   // Command line parse routine.
-  bool parse_commandline(int argc, char **argv);
-  bool parse_commandline(char *switches) {
+  bool parse_commandline(int argc, const char **argv);
+  bool parse_commandline(const char *switches) {
     return parse_commandline(0, &switches);
   }
 
@@ -2472,7 +2472,7 @@ void tetrahedralize(tetgenbehavior *b, tetgenio *in, tetgenio *out,
                     tetgenio *addin = NULL, tetgenio *bgmin = NULL);
 
 #ifdef TETLIBRARY
-void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,
+void tetrahedralize(const char *switches, tetgenio *in, tetgenio *out,
                     tetgenio *addin = NULL, tetgenio *bgmin = NULL);
 
 #endif // #ifdef TETLIBRARY
