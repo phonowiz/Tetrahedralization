@@ -77,7 +77,19 @@ struct vector3d {
         return vector3d(coords[0] - rhs.coords[0], coords[1] - rhs.coords[1], coords[2] - rhs.coords[2]);
     }
     
-    bool epsion_equal()
+    vector3d operator*(REAL c)
+    {
+        return vector3d(coords[0] * c, coords[1] * c, coords[2] * c);
+    }
+    
+    vector3d operator*=(REAL c)
+    {
+        coords[0] *= c;
+        coords[1] *= c;
+        coords[2] *= c;
+        return *this;
+    }
+    bool epsion_equal() const
     {
         static const vector3d epsilon(std::numeric_limits<REAL>::epsilon());
         

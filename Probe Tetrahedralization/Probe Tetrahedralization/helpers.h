@@ -21,7 +21,6 @@ void find_triangles(std::vector<vector3d>& verteces,
     
     if(path.size() == 3)
     {
-        //segment3d segment = verteces[vertex_index].segments.back();
         for(segment3d segment : verteces[vertex_index].segments)
         {
             assert(segment.p1 != segment.p2);
@@ -78,7 +77,7 @@ bool triangle_intersect_no_edge_or_vertex(const triangle3d& tri1, const triangle
         std::array<vector3d, 6> vertices = {a1, a2, a3, b1, b2, b3};
         for(vector3d& v : vertices)
         {
-            vector3d x = v - vpt1;
+            const vector3d x = v - vpt1;
             if(x.epsion_equal())
             {
                 intersect = false;
@@ -96,11 +95,21 @@ bool triangle_intersect_no_edge_or_vertex(const triangle3d& tri1, const triangle
         {
             for(const vector3d& p : potential_edge)
             {
-                vector3d x = *iter - p;
+                vector3d e = *iter;
+                vector3d x = e - p;
                 if(x.epsion_equal())
                 {
                     intersect = false;
                     break;
+                }
+                else
+                {
+                    x = p - e;
+                    if(x.epsion_equal())
+                    {
+                        intersect = false;
+                        break;
+                    }
                 }
             }
             ++iter;
@@ -113,7 +122,6 @@ void generate_input_tetgen(tetgenio& in)
 {
     static constexpr REAL num_triangles = 2.0f;
     static constexpr REAL max_vertices = num_triangles * 3.0f;
-    //static constexpr REAL num_randoms = max_vertices * 3.0f;
     
     in.firstnumber = 0;
     in.numberofpoints = max_vertices;
@@ -126,17 +134,14 @@ void generate_input_tetgen(tetgenio& in)
         vector3d vec(std::fmod(rand(), 20.f), std::fmod(rand(), 20.0f), std::fmod(rand(), 20.f));
         vertices.push_back(vec);
     }
-
-    //TODO: generate segment to every other vertex, there will be duplicates, how to hash a segment??
+    
     for(int i = 0; i < max_vertices; ++i)
     {
         for(int j = 0; j < max_vertices; ++j)
         {
             if(i == j)
                 continue;
-            
             vertices[i].segments.push_back(segment3d(i, j));
-            
         }
     }
     
@@ -169,7 +174,6 @@ void generate_input_tetgen(tetgenio& in)
             final_triangles.insert(tri);
     }
     
-    //for(const triangle3d& removed : removed_triangles)
     auto removed_iter = removed_triangles.begin();
     while(removed_iter != removed_triangles.end())
     {
@@ -178,18 +182,9 @@ void generate_input_tetgen(tetgenio& in)
         
         for(const triangle3d& final : final_triangles)
         {
-            if(*removed_iter != final)
+            if(removed != final)
             {
-                vector3d& a1 = vertices[removed.pt1];
-                vector3d& a2 = vertices[removed.pt2];
-                vector3d& a3 = vertices[removed.pt3];
-                
-                vector3d& b1 = vertices[final.pt1];
-                vector3d& b2 = vertices[final.pt2];
-                vector3d& b3 = vertices[final.pt3];
-                
-                intersect = threeyd::moeller::TriangleIntersectsFloats::triangle(a1.coords, a2.coords, a3.coords,
-                                                   b1.coords, b2.coords, b3.coords);
+                intersect = triangle_intersect_no_edge_or_vertex(final, removed, vertices);
                 if(intersect)
                     break;
             }

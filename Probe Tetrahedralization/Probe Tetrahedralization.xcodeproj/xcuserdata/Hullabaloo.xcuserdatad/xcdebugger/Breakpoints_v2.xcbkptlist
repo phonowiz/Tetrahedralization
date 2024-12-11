@@ -62,8 +62,8 @@
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "124"
-            endingLineNumber = "124"
+            startingLineNumber = "132"
+            endingLineNumber = "132"
             landmarkName = "generate_input_tetgen(in)"
             landmarkType = "9">
          </BreakpointContent>
@@ -94,8 +94,8 @@
             filePath = "Probe Tetrahedralization/mathematics.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "104"
-            endingLineNumber = "104"
+            startingLineNumber = "116"
+            endingLineNumber = "116"
             landmarkName = "triangle3d"
             landmarkType = "14">
          </BreakpointContent>
@@ -120,30 +120,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "99799363-9712-4B92-A366-89673CE4112A"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Probe Tetrahedralization/helpers.h"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "147"
-            endingLineNumber = "147"
-            landmarkName = "generate_input_tetgen(in)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "0FC07078-4C52-4932-9B2A-A08D2D7ED450"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "172"
-            endingLineNumber = "172"
+            startingLineNumber = "152"
+            endingLineNumber = "152"
             landmarkName = "generate_input_tetgen(in)"
             landmarkType = "9">
          </BreakpointContent>
@@ -158,8 +142,8 @@
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "70"
-            endingLineNumber = "70"
+            startingLineNumber = "69"
+            endingLineNumber = "69"
             landmarkName = "triangle_intersect_no_edge_or_vertex(tri1, tri2, vertices)"
             landmarkType = "9">
          </BreakpointContent>
@@ -168,14 +152,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "6AAD0E16-6512-4F4E-BB6D-F2789BE9C38C"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "160"
-            endingLineNumber = "160"
+            startingLineNumber = "165"
+            endingLineNumber = "165"
             landmarkName = "generate_input_tetgen(in)"
             landmarkType = "9">
          </BreakpointContent>
@@ -190,8 +174,8 @@
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "89"
-            endingLineNumber = "89"
+            startingLineNumber = "88"
+            endingLineNumber = "88"
             landmarkName = "triangle_intersect_no_edge_or_vertex(tri1, tri2, vertices)"
             landmarkType = "9">
          </BreakpointContent>
@@ -206,10 +190,73 @@
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "85"
-            endingLineNumber = "85"
+            startingLineNumber = "84"
+            endingLineNumber = "84"
             landmarkName = "triangle_intersect_no_edge_or_vertex(tri1, tri2, vertices)"
             landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "284A0D5B-76D3-4921-AC35-94BAE02485C4"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Probe Tetrahedralization/helpers.h"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "199"
+            endingLineNumber = "199"
+            landmarkName = "generate_input_tetgen(in)"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "284A0D5B-76D3-4921-AC35-94BAE02485C4 - 24d5f027aa239eca"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "generate_input_tetgen(tetgenio&amp;)"
+                  moduleName = "Probe Tetrahedralization"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Hullabaloo/Documents/test/Tetrahedralization/Probe%20Tetrahedralization/Probe%20Tetrahedralization/helpers.h"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "199"
+                  endingLineNumber = "199"
+                  offsetFromSymbolStart = "299">
+               </Location>
+               <Location
+                  uuid = "284A0D5B-76D3-4921-AC35-94BAE02485C4 - 24d5f027aa239eca"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "generate_input_tetgen(tetgenio&amp;)"
+                  moduleName = "Probe Tetrahedralization"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Hullabaloo/Documents/test/Tetrahedralization/Probe%20Tetrahedralization/Probe%20Tetrahedralization/helpers.h"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "199"
+                  endingLineNumber = "199"
+                  offsetFromSymbolStart = "1037">
+               </Location>
+               <Location
+                  uuid = "284A0D5B-76D3-4921-AC35-94BAE02485C4 - 24d5f027aa239eca"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "generate_input_tetgen(tetgenio&amp;)"
+                  moduleName = "Probe Tetrahedralization"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/Hullabaloo/Documents/test/Tetrahedralization/Probe%20Tetrahedralization/Probe%20Tetrahedralization/helpers.h"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "199"
+                  endingLineNumber = "199"
+                  offsetFromSymbolStart = "1060">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
