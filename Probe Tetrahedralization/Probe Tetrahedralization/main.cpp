@@ -5,7 +5,13 @@
 //  Created by Rafael Sabino on 12/5/24.
 //
 #include "tetgen.h"
+#include "mathematics.h"
+#include "helpers.h"
+
+
 #include <iostream>
+
+std::atomic_uint32_t segment3d::current_id = 0;
 
 int main(int argc, const char * argv[]) {
     
@@ -14,6 +20,7 @@ int main(int argc, const char * argv[]) {
     tetgenio::polygon *p;
     int i;
 
+    generate_input_tetgen(in);
     // All indices start from 1.
     in.firstnumber = 1;
 

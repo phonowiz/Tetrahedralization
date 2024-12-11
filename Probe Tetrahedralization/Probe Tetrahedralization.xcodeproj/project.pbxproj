@@ -30,6 +30,8 @@
 		B920D04F2D0264CF00814FC1 /* tetgen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tetgen.h; sourceTree = "<group>"; };
 		B920D0502D0264CF00814FC1 /* tetgen.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tetgen.cxx; sourceTree = "<group>"; };
 		B920D0532D0265C800814FC1 /* predicates.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = predicates.cxx; sourceTree = "<group>"; };
+		B920D0552D02E5F100814FC1 /* mathematics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mathematics.h; sourceTree = "<group>"; };
+		B920D0562D02E95C00814FC1 /* helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helpers.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,8 @@
 			isa = PBXGroup;
 			children = (
 				B920D0482D02523D00814FC1 /* main.cpp */,
+				B920D0552D02E5F100814FC1 /* mathematics.h */,
+				B920D0562D02E95C00814FC1 /* helpers.h */,
 			);
 			path = "Probe Tetrahedralization";
 			sourceTree = "<group>";
@@ -258,6 +262,7 @@
 		B920D04D2D02523D00814FC1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5662ABGNXL;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -277,6 +282,7 @@
 		B920D04E2D02523D00814FC1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5662ABGNXL;
 				ENABLE_HARDENED_RUNTIME = YES;
