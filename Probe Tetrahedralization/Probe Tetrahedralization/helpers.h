@@ -118,10 +118,53 @@ bool triangle_intersect_no_edge_or_vertex(const triangle3d& tri1, const triangle
     
     return intersect;
 }
+
+
+void populate_tetgenio(tetgenio& in, const std::unordered_set<triangle3d>& triangles,
+                       const std::vector<vector3d>& vertices)
+{
+    in.firstnumber = 0;
+    
+    in.numberofpoints = (int)vertices.size();
+    in.pointlist = new REAL[in.numberofpoints * 3];
+    
+    for(int i = 0, pnt = 0; i < in.numberofpoints; i++, pnt += 3)
+    {
+        in.pointlist[pnt + 0] = vertices[i].coords[0];
+        in.pointlist[pnt + 1] = vertices[i].coords[1];
+        in.pointlist[pnt + 2] = vertices[i].coords[2];
+    }
+    
+    in.numberoffacets = 0;//(int)triangles.size();
+    in.facetlist = nullptr;//new tetgenio::facet[in.numberoffacets];
+    in.facetmarkerlist = nullptr;//new int[in.numberoffacets];
+    
+//    int count = 0;
+//    for(const triangle3d& tri : triangles)
+//    {
+//        tetgenio::facet *f = &in.facetlist[count];
+//        f->numberofpolygons = 1;
+//        f->polygonlist = new tetgenio::polygon();
+//        f->numberofholes = 0;
+//        f->holelist = nullptr;
+//        
+//        tetgenio::polygon *p = f->polygonlist;
+//        p->numberofvertices = 3;
+//        p->vertexlist = new int[p->numberofvertices];
+//        p->vertexlist[0] = tri.pt1;
+//        p->vertexlist[1] = tri.pt2;
+//        p->vertexlist[2] = tri.pt3;
+//        
+//        in.facetmarkerlist[count] = count;
+//        count++;
+//    }
+    
+}
+
+
 void generate_input_tetgen(tetgenio& in)
 {
-    static constexpr REAL num_triangles = 2.0f;
-    static constexpr REAL max_vertices = num_triangles * 3.0f;
+    static constexpr REAL max_vertices = REAL(50.0);
     
     in.firstnumber = 0;
     in.numberofpoints = max_vertices;
@@ -131,7 +174,7 @@ void generate_input_tetgen(tetgenio& in)
     
     for(int i = 0; i < max_vertices; ++i)
     {
-        vector3d vec(std::fmod(rand(), 20.f), std::fmod(rand(), 20.0f), std::fmod(rand(), 20.f));
+        vector3d vec(std::fmod(rand(), 1000.f), std::fmod(rand(), 1000.0f), std::fmod(rand(), 1000.f));
         vertices.push_back(vec);
     }
     
@@ -163,7 +206,6 @@ void generate_input_tetgen(tetgenio& in)
                 continue;
             
             intersect = triangle_intersect_no_edge_or_vertex(tri, tri2, vertices);
-
             if(intersect)
                 break;
         }
@@ -195,5 +237,7 @@ void generate_input_tetgen(tetgenio& in)
         
         removed_iter++;
     }
+    
+    populate_tetgenio(in, final_triangles, vertices);
     
 }

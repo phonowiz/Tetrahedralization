@@ -451,7 +451,7 @@ class TriangleIntersects
 
         int idx = index_into_smallest_component_abs(LineVec);
         TemplatedVec n0{static_cast<float>(idx == 0), static_cast<float>(idx == 1), static_cast<float>(idx == 2)};
-        TemplatedVec result;
+        TemplatedVec result(3);
         cross(result, n0, LineVec);
         return result;
     }
