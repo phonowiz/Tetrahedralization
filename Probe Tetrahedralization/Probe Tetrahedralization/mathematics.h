@@ -8,8 +8,8 @@
 #pragma once
 
 #include "tetgen.h"
+#include "glm/vec3.hpp"
 
-//#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -20,9 +20,6 @@
 #include <vector>
 #include <array>
 #include <unordered_set>
-//#include <numeric_limits>
-
-
 
 struct segment3d {
     uint32_t p1, p2;
@@ -47,70 +44,81 @@ struct segment3d {
 
 
 
-struct vector3d {
-    //REAL x, y, z;
-    std::vector<REAL> coords = std::vector<REAL>(3);
-
-    inline vector3d(){};
-    inline vector3d( REAL x_, REAL y_, REAL z_)
-    {
-        coords[0] = (x_);
-        coords[1] = (y_);
-        coords[2] = (z_);
-    };
-    
-    vector3d(std::vector<REAL> v)
-    {
-        assert(v.size() == 3);
-        coords[0] = v[0];
-        coords[1] = v[1];
-        coords[2] = v[2];
-    }
-    
-    inline vector3d(REAL n)
-    {
-        coords[0] = coords[1] = coords[2] = n;
-    }
-    
-    vector3d operator-(const vector3d& rhs)
-    {
-        return vector3d(coords[0] - rhs.coords[0], coords[1] - rhs.coords[1], coords[2] - rhs.coords[2]);
-    }
-    
-    vector3d operator*(REAL c)
-    {
-        return vector3d(coords[0] * c, coords[1] * c, coords[2] * c);
-    }
-    
-    vector3d operator*=(REAL c)
-    {
-        coords[0] *= c;
-        coords[1] *= c;
-        coords[2] *= c;
-        return *this;
-    }
-    bool epsion_equal() const
-    {
-        static const vector3d epsilon(std::numeric_limits<REAL>::epsilon());
-        
-        return     std::abs(coords[0]) <= epsilon.coords[0]
-                && std::abs(coords[1]) <= epsilon.coords[1]
-                && std::abs(coords[2]) <= epsilon.coords[2];
-        
-        
-    }
-    std::vector<segment3d> segments;
-};
-
-vector3d operator-(const vector3d& lhs, const vector3d& rhs)
-{
-    return vector3d(lhs.coords[0] - rhs.coords[0], lhs.coords[1] - rhs.coords[1], lhs.coords[2] - rhs.coords[2]);
-}
-
-bool operator==(const vector3d& lhs, const vector3d& rhs)
-{
-    return lhs.coords[0] == rhs.coords[0] && lhs.coords[1] == rhs.coords[1] && lhs.coords[2] == rhs.coords[2];
-}
+//struct vector3d {
+//    //REAL x, y, z;
+//    std::vector<REAL> coords = std::vector<REAL>(3);
+//
+//    inline vector3d(){};
+//    inline vector3d( REAL x_, REAL y_, REAL z_)
+//    {
+//        coords[0] = (x_);
+//        coords[1] = (y_);
+//        coords[2] = (z_);
+//    };
+//
+//    vector3d(std::vector<REAL> v)
+//    {
+//        assert(v.size() == 3);
+//        coords[0] = v[0];
+//        coords[1] = v[1];
+//        coords[2] = v[2];
+//    }
+//
+//    inline vector3d(REAL n)
+//    {
+//        coords[0] = coords[1] = coords[2] = n;
+//    }
+//
+//    inline vector3d operator-(const vector3d& rhs) const
+//    {
+//        return vector3d(coords[0] - rhs.coords[0], coords[1] - rhs.coords[1], coords[2] - rhs.coords[2]);
+//    }
+//
+//    inline vector3d operator*(REAL c) const
+//    {
+//        return vector3d(coords[0] * c, coords[1] * c, coords[2] * c);
+//    }
+//
+//    inline vector3d operator*=(REAL c)
+//    {
+//        coords[0] *= c;
+//        coords[1] *= c;
+//        coords[2] *= c;
+//        return *this;
+//    }
+//
+//    inline float length() const
+//    {
+//        return std::sqrt(std::powf(coords[0], 2.0f) + std::powf(coords[1], 2.0f) + std::powf(coords[2], 2.0f));
+//    }
+//
+//    bool epsion_equal() const
+//    {
+//        static const vector3d epsilon(std::numeric_limits<REAL>::epsilon());
+//
+//        return     std::abs(coords[0]) <= epsilon.coords[0]
+//                && std::abs(coords[1]) <= epsilon.coords[1]
+//                && std::abs(coords[2]) <= epsilon.coords[2];
+//
+//
+//    }
+//    std::vector<segment3d> segments;
+//};
+//
+//inline vector3d operator-(const vector3d& lhs, const vector3d& rhs)
+//{
+//    return vector3d(lhs.coords[0] - rhs.coords[0], lhs.coords[1] - rhs.coords[1], lhs.coords[2] - rhs.coords[2]);
+//}
+//
+//inline vector3d operator+(const vector3d& lhs, const vector3d& rhs)
+//{
+//    return vector3d(lhs.coords[0] + rhs.coords[0], lhs.coords[1] + rhs.coords[1], lhs.coords[2] + rhs.coords[2]);
+//}
+//
+//bool operator==(const vector3d& lhs, const vector3d& rhs)
+//{
+//    return lhs.coords[0] == rhs.coords[0] && lhs.coords[1] == rhs.coords[1] && lhs.coords[2] == rhs.coords[2];
+//}
 struct triangle3d
 {
     uint32_t pt1;
@@ -207,10 +215,10 @@ namespace std
         }
     };
 
-    vector3d abs(const vector3d& v)
-    {
-        return vector3d(std::abs(v.coords[0]), std::abs(v.coords[1]), std::abs(v.coords[2]));
-    };
+//    vector3d abs(const vector3d& v)
+//    {
+//        return vector3d(std::abs(v.coords[0]), std::abs(v.coords[1]), std::abs(v.coords[2]));
+//    };
 };
 
 /**

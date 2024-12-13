@@ -7,148 +7,292 @@
 #include "tetgen.h"
 #include "mathematics.h"
 #include "helpers.h"
+#include "shapes.h"
 
-
+#include <queue>
 #include <iostream>
+#include <thread>
 
 std::atomic_uint32_t segment3d::current_id = 0;
 
-int main(int argc, const char * argv[]) {
-    
-    tetgenio in, out;
-//    tetgenio::facet *f;
-//    tetgenio::polygon *p;
-//    int i;
+//static constexpr float maxd = 20.0f;        // max trace distance
+static constexpr float precis = 0.00001;    // precission of the intersection
 
-    generate_input_tetgen(in);
-//    // All indices start from 1.
-//    in.firstnumber = 1;
+float calc_intersection( glm::vec3 ro, glm::vec3 rd, float maxd, bool& collision)
+{
+    collision = false;
+    float h = precis * 2.0f;
+    float t = 0.0;
+    float res = -1.0;
+    for( int i=0; (i < 90) && (std::abs(t) < maxd); i++)          // max number of raymarching iterations is 90
+    {
+        collision = (h >= 0.0f) && ( h < precis);
+        if(collision)
+            break;
+        
+        h = do_model( ro+rd*t, 0 ).x;
+        
+        t += std::abs(h);
+    }
+    res = t;
+    return res;
+}
+
+
+class probe_collector
+{
+public:
+    glm::vec3 ro = glm::vec3(0.0f);
+    glm::vec3 rd = glm::vec3(0.0f);
+    std::atomic<bool>* done = nullptr;
+    std::vector<glm::vec3>* probes = nullptr;
+    
+    float maxd = 10.0f;
+
+    
+    probe_collector(){};
+    probe_collector(glm::vec3 ro, glm::vec3 rd) : ro(ro), rd(rd) {}
+    
+    bool is_done(){ return *done;}
+    
+    //std::vector<glm::vec3>* probes;
+    
+    void operator()()
+    {
+        (*done) = false;
+        float t = 0.0f;
+        glm::vec3 origin = ro;
+        glm::vec3 dir = rd;
+        
+        std::vector<glm::vec3>& pr = *probes;
+        pr.clear();
+        
+        while(std::abs(t) < maxd)
+        {
+            bool collision = false;
+            t = calc_intersection(origin, dir, maxd, collision);
+            
+            if(collision)
+            {
+                glm::vec3 c = origin + dir * t;
+                
+                if(!pr.empty())
+                {
+                    //glm::vec3 v = pr.front() - c;
+                    //if(v.length() < (.1))
+                        pr.push_back(c);
+                }
+                else
+                    pr.push_back(c);
+                
+//                t = std::abs(t) + precis;
+            }
+//            else
+//                t = std::abs(t) + precis;
+            
+            origin = origin + dir * std::abs(t);
+            maxd -= std::abs(t);
+            t = std::abs(t) + precis;
+            
+            maxd = std::max(maxd, 0.0f);
+
+        }
+        
+        (*done) = true;
+    }
+};
+
+
+#define TOTAL_THREADS (20)
+struct collector_manager
+{
+
+    std::array<std::thread, TOTAL_THREADS>         threads;
+    std::array<probe_collector, TOTAL_THREADS>     collectors;
+    std::array<std::atomic<bool>, TOTAL_THREADS>   dones;
+    std::array<std::vector<glm::vec3>, TOTAL_THREADS> probes;
+    
+    collector_manager()
+    {
+        std::fill(dones.begin(), dones.end(), true);
+        
+        for( int i = 0; i < TOTAL_THREADS; ++i)
+        {
+            collectors[i].done = &dones[i];
+            collectors[i].probes = &probes[i];
+        }
+    }
+};
+
+
+void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
+{
+    collector_manager manager;
+    
+    constexpr float total_width = 10.0f;
+    constexpr float total_height = 10.0f;
+    
+    static_assert(total_width == total_height);
+    
+    float steps =  .3f;
+
+    
+    //X PLANE
+    for(float w = -total_width * .5f; w < total_width * .5f; w += steps)
+    {
+        for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
+        {
+            glm::vec3 ro(total_width, w, h);
+            glm::vec3 rd(-1.0f, 0.0f, 0.0f);
+            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
+            
+            int index = 0;
+            int count = 0;
+            while(true)
+            {
+                index = count++ % manager.collectors.size();
+                if(manager.collectors[index].is_done())
+                {
+                    if(manager.threads[index].joinable())
+                    {
+                        manager.threads[index].join();
+                    }
+                    probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
+                    manager.probes[index].clear();
+                    break;
+                }
+            }
+            
+            manager.collectors[index].ro = ro;
+            manager.collectors[index].rd = rd;
+            manager.collectors[index].maxd = total_width;
+        
+            manager.threads[index] = std::thread(manager.collectors[index]);
+        }
+    }
+    
+    int count = 0;
+    for(std::thread& t : manager.threads)
+    {
+        if(t.joinable())
+            t.join();
+        probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
+        count++;
+    }
+    
+    
+//    //Z PLANE
+//    for(float w = -total_width * .5f; w < total_width * .5f; w += steps)
+//    {
+//        for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
+//        {
+//            glm::vec3 ro(w, h, total_height);
+//            glm::vec3 rd(0.0f, 0.0f, -1.0f);
 //
-//    in.numberofpoints = 8;
-//    in.pointlist = new REAL[in.numberofpoints * 3];
-//    in.pointlist[0]  = 0.0f;  // vertex 1.
-//    in.pointlist[1]  = 0.0f;
-//    in.pointlist[2]  = 0.0f;
-//    in.pointlist[3]  = 2.0f;  // vertex 2.
-//    in.pointlist[4]  = 0.0f;
-//    in.pointlist[5]  = 0.0f;
-//    in.pointlist[6]  = 2.0f;  // vertex 3.
-//    in.pointlist[7]  = 2.0f;
-//    in.pointlist[8]  = 0.0f;
-//    in.pointlist[9]  = 0.0f;  // vertex 4.
-//    in.pointlist[10] = 2.0f;
-//    in.pointlist[11] = 0.0f;
-//    // Set node 5, 6, 7, 8.
-//    for (i = 4; i < 8; i++) {
-//      in.pointlist[i * 3]     = in.pointlist[(i - 4) * 3];
-//      in.pointlist[i * 3 + 1] = in.pointlist[(i - 4) * 3 + 1];
-//      in.pointlist[i * 3 + 2] = 12.0f;
+//            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
+//
+//            //glm::vec3 rd(-1.0f, 0.0f, 0.0f);
+//
+//            int index = 0;
+//            int count = 0;
+//            while(true)
+//            {
+//                index = count++ % manager.collectors.size();
+//                if(manager.collectors[index].is_done())
+//                {
+//                    if(manager.threads[index].joinable())
+//                    {
+//                        manager.threads[index].join();
+//                    }
+//                    probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
+//                    manager.probes[index].clear();
+//                    break;
+//                }
+//            }
+//
+//            manager.collectors[index].ro = ro;
+//            manager.collectors[index].rd = rd;
+//            manager.collectors[index].maxd = total_width * 2.f;
+//
+//            manager.threads[index] = std::thread(manager.collectors[index]);
+//        }
 //    }
 //
-//    in.numberoffacets = 6;
-//    in.facetlist = new tetgenio::facet[in.numberoffacets];
-//    in.facetmarkerlist = new int[in.numberoffacets];
+//    count = 0;
+//    for(std::thread& t : manager.threads)
+//    {
+//        if(t.joinable())
+//            t.join();
+//        probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
+//        count++;
+//    }
 //
-//    // Facet 1. The leftmost facet.
-//    f = &in.facetlist[0];
-//    f->numberofpolygons = 1;
-//    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-//    f->numberofholes = 0;
-//    f->holelist = NULL;
-//    p = &f->polygonlist[0];
-//    p->numberofvertices = 4;
-//    p->vertexlist = new int[p->numberofvertices];
-//    p->vertexlist[0] = 1;
-//    p->vertexlist[1] = 2;
-//    p->vertexlist[2] = 3;
-//    p->vertexlist[3] = 4;
 //
-//    // Facet 2. The rightmost facet.
-//    f = &in.facetlist[1];
-//    f->numberofpolygons = 1;
-//    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-//    f->numberofholes = 0;
-//    f->holelist = NULL;
-//    p = &f->polygonlist[0];
-//    p->numberofvertices = 4;
-//    p->vertexlist = new int[p->numberofvertices];
-//    p->vertexlist[0] = 5;
-//    p->vertexlist[1] = 6;
-//    p->vertexlist[2] = 7;
-//    p->vertexlist[3] = 8;
+//    //Y IS UP!!!
+//    for(float w = -total_width * .5f; w < total_width * .5f; w += steps)
+//    {
+//        for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
+//        {
+//            glm::vec3 ro(w, total_height, h);
+//            glm::vec3 rd(0.0f, -1.0f, 0.0f);
 //
-//    // Facet 3. The bottom facet.
-//    f = &in.facetlist[2];
-//    f->numberofpolygons = 1;
-//    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-//    f->numberofholes = 0;
-//    f->holelist = NULL;
-//    p = &f->polygonlist[0];
-//    p->numberofvertices = 4;
-//    p->vertexlist = new int[p->numberofvertices];
-//    p->vertexlist[0] = 1;
-//    p->vertexlist[1] = 5;
-//    p->vertexlist[2] = 6;
-//    p->vertexlist[3] = 2;
+//            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
 //
-//    // Facet 4. The back facet.
-//    f = &in.facetlist[3];
-//    f->numberofpolygons = 1;
-//    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-//    f->numberofholes = 0;
-//    f->holelist = NULL;
-//    p = &f->polygonlist[0];
-//    p->numberofvertices = 4;
-//    p->vertexlist = new int[p->numberofvertices];
-//    p->vertexlist[0] = 2;
-//    p->vertexlist[1] = 6;
-//    p->vertexlist[2] = 7;
-//    p->vertexlist[3] = 3;
+//            //glm::vec3 rd(-1.0f, 0.0f, 0.0f);
 //
-//    // Facet 5. The top facet.
-//    f = &in.facetlist[4];
-//    f->numberofpolygons = 1;
-//    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-//    f->numberofholes = 0;
-//    f->holelist = NULL;
-//    p = &f->polygonlist[0];
-//    p->numberofvertices = 4;
-//    p->vertexlist = new int[p->numberofvertices];
-//    p->vertexlist[0] = 3;
-//    p->vertexlist[1] = 7;
-//    p->vertexlist[2] = 8;
-//    p->vertexlist[3] = 4;
+//            int index = 0;
+//            int count = 0;
+//            while(true)
+//            {
+//                index = count++ % manager.collectors.size();
+//                if(manager.collectors[index].is_done())
+//                {
+//                    if(manager.threads[index].joinable())
+//                    {
+//                        manager.threads[index].join();
+//                    }
+//                    probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
+//                    manager.probes[index].clear();
+//                    break;
+//                }
+//            }
 //
-//    // Facet 6. The front facet.
-//    f = &in.facetlist[5];
-//    f->numberofpolygons = 1;
-//    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-//    f->numberofholes = 0;
-//    f->holelist = NULL;
-//    p = &f->polygonlist[0];
-//    p->numberofvertices = 4;
-//    p->vertexlist = new int[p->numberofvertices];
-//    p->vertexlist[0] = 4;
-//    p->vertexlist[1] = 8;
-//    p->vertexlist[2] = 5;
-//    p->vertexlist[3] = 1;
+//            manager.collectors[index].ro = ro;
+//            manager.collectors[index].rd = rd;
+//            manager.collectors[index].maxd = total_width * 2.f;
 //
-//    // Set 'in.facetmarkerlist'
+//            manager.threads[index] = std::thread(manager.collectors[index]);
+//        }
+//    }
 //
-//    in.facetmarkerlist[0] = 0;
-//    in.facetmarkerlist[1] = 1;
-//    in.facetmarkerlist[2] = 2;
-//    in.facetmarkerlist[3] = 3;
-//    in.facetmarkerlist[4] = 4;
-//    in.facetmarkerlist[5] = 5;
+//    count = 0;
+//    for(std::thread& t : manager.threads)
+//    {
+//        if(t.joinable())
+//            t.join();
+//        probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
+//        count++;
+//    }
 
+    populate_tetgenio(in, probes);
+}
+int main(int argc, const char * argv[]) {
+    
+    
+    std::vector<glm::vec3> probes;
+    tetgenio in, out;
+    generate_probes(in, probes);
+    
+    for(int i = 0; i < probes.size(); ++i)
+    {
+        std::cout << "d += drawPoint(ro, rd, vec3(" << probes[i].x << "," << probes[i].y << "," << probes[i].z << "));" << std::endl;
+    }
+
+    //generate_input_tetgen(in);
+    
     // Output the PLC to files 'barin.node' and 'barin.poly'.
     in.save_nodes("barin");
     in.save_poly("barin");
-
-    // Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
-    //   do quality mesh generation (q) with a specified quality bound
-    //   (1.414), and apply a maximum volume constraint (a0.1).
 
     tetrahedralize("nVfc", &in, &out);
 
@@ -157,7 +301,9 @@ int main(int argc, const char * argv[]) {
     out.save_elements("barout");
     out.save_faces("barout");
     out.save_neighbors("barout");
+    out.save_poly("barout");
+    
 
-    //return 0;
+    
     return 0;
 }

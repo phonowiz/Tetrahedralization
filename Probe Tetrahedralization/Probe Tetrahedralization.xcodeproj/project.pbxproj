@@ -32,6 +32,7 @@
 		B920D0532D0265C800814FC1 /* predicates.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = predicates.cxx; sourceTree = "<group>"; };
 		B920D0552D02E5F100814FC1 /* mathematics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mathematics.h; sourceTree = "<group>"; };
 		B920D0562D02E95C00814FC1 /* helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helpers.h; sourceTree = "<group>"; };
+		B9B495032D0A325300F621A1 /* shapes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shapes.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +69,7 @@
 				B920D0482D02523D00814FC1 /* main.cpp */,
 				B920D0552D02E5F100814FC1 /* mathematics.h */,
 				B920D0562D02E95C00814FC1 /* helpers.h */,
+				B9B495032D0A325300F621A1 /* shapes.h */,
 			);
 			path = "Probe Tetrahedralization";
 			sourceTree = "<group>";
@@ -275,6 +277,7 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Probe Tetrahedralization\"",
 					"\"$(SRCROOT)/tetgen1.6.0\"",
+					"\"$(SRCROOT)/glm\"",
 				);
 			};
 			name = Debug;
@@ -291,6 +294,7 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Probe Tetrahedralization\"",
 					"\"$(SRCROOT)/tetgen1.6.0\"",
+					"\"$(SRCROOT)/glm\"",
 				);
 			};
 			name = Release;
