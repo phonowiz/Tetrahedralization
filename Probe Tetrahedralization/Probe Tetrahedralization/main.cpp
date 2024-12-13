@@ -142,8 +142,8 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
     {
         for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
         {
-            glm::vec3 ro(total_width, w, h);
-            glm::vec3 rd(-1.0f, 0.0f, 0.0f);
+            glm::vec3 ro(-total_width, w, h);
+            glm::vec3 rd(1.0f, 0.0f, 0.0f);
             std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
             
             int index = 0;

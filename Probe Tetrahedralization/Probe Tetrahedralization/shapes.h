@@ -96,7 +96,7 @@ glm::vec2 max2(glm::vec2 a, glm::vec2 b)
 
 float sdSphere( glm::vec3 p, float s )
 {
-    return p.length()-s;
+    return glm::length(p)-s;
 }
 
 float sdCylinder( glm::vec3 p, float s )
@@ -108,7 +108,7 @@ float sdCylinder( glm::vec3 p, float s )
 float sdTorus( glm::vec3 p, glm::vec2 t )
 {
     glm::vec2 xz(p.x, p.z);
-    glm::vec2 q = glm::vec2(length(xz)-t.x,p.y);
+    glm::vec2 q = glm::vec2(glm::length(xz)-t.x,p.y);
     return glm::length(q)-t.y;
 }
 
