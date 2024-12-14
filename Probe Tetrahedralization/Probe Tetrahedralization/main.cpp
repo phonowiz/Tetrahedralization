@@ -24,15 +24,26 @@ float calc_intersection( glm::vec3 ro, glm::vec3 rd, float maxd, bool& collision
     float h = precis * 2.0f;
     float t = 0.0;
     float res = -1.0;
-    for( int i=0; (i < 90) && (std::abs(t) < maxd); i++)          // max number of raymarching iterations is 90
+    for( int i=0; (i < 90); i++)          // max number of raymarching iterations is 90
     {
         collision = (h >= 0.0f) && ( h < precis);
         if(collision)
             break;
         
-        h = do_model( ro+rd*t, 0 ).x;
-        
-        t += std::abs(h);
+        while(t < maxd)
+        {
+            h = do_model( ro+rd*t, 0 ).x;
+            //h = std::abs(h) + precis;
+            t += std::abs(h) + precis;
+            
+            if(h >= 0.0f)
+                break;
+        }
+
+//        if(h <= 0.0)
+//            t += precis;
+//        else
+//            t += h;
     }
     res = t;
     return res;
@@ -69,32 +80,33 @@ public:
         
         while(std::abs(t) < maxd)
         {
-            bool collision = false;
-            t = calc_intersection(origin, dir, maxd, collision);
+            //bool collision = false;
+            float h = do_model(ro + rd * t, 0.0f).x;//calc_intersection(origin, dir, maxd, collision);
             
-            if(collision)
+            if(( glm::abs(h) < precis))
             {
                 glm::vec3 c = origin + dir * t;
                 
                 if(!pr.empty())
                 {
-                    //glm::vec3 v = pr.front() - c;
-                    //if(v.length() < (.1))
+                    glm::vec3 v = pr.back() - c;
+                    if(glm::length(v) > (.9f ))
                         pr.push_back(c);
                 }
                 else
                     pr.push_back(c);
                 
-//                t = std::abs(t) + precis;
+                //t = std::abs(t) + precis;
+                t += precis ;
             }
-//            else
-//                t = std::abs(t) + precis;
+            else
+                t += precis;
             
-            origin = origin + dir * std::abs(t);
-            maxd -= std::abs(t);
-            t = std::abs(t) + precis;
+            //origin = origin + dir * std::abs(t);
+            //maxd -= std::abs(t);
+
             
-            maxd = std::max(maxd, 0.0f);
+            //maxd = std::max(maxd, 0.0f);
 
         }
         
@@ -134,16 +146,15 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
     
     static_assert(total_width == total_height);
     
-    float steps =  .3f;
-
+    float steps =  .5f;
     
     //X PLANE
     for(float w = -total_width * .5f; w < total_width * .5f; w += steps)
     {
         for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
         {
-            glm::vec3 ro(-total_width, w, h);
-            glm::vec3 rd(1.0f, 0.0f, 0.0f);
+            glm::vec3 ro(total_width, w, h);
+            glm::vec3 rd(-1.0f, 0.0f, 0.0f);
             std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
             
             int index = 0;
@@ -157,6 +168,9 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
                     {
                         manager.threads[index].join();
                     }
+                    
+                    if(!manager.probes[index].empty())
+                        printf("%d probes found\n", (int)manager.probes[index].size());
                     probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
                     manager.probes[index].clear();
                     break;
@@ -165,7 +179,7 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
             
             manager.collectors[index].ro = ro;
             manager.collectors[index].rd = rd;
-            manager.collectors[index].maxd = total_width;
+            manager.collectors[index].maxd = total_width * 2.;
         
             manager.threads[index] = std::thread(manager.collectors[index]);
         }
@@ -294,7 +308,7 @@ int main(int argc, const char * argv[]) {
     in.save_nodes("barin");
     in.save_poly("barin");
 
-    tetrahedralize("nVfc", &in, &out);
+    tetrahedralize("", &in, &out);
 
     // Output mesh to files 'barout.node', 'barout.ele' and 'barout.face'.
     out.save_nodes("barout");
