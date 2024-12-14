@@ -76,12 +76,12 @@ public:
         glm::vec3 dir = rd;
         
         std::vector<glm::vec3>& pr = *probes;
-        pr.clear();
+        //pr.clear();
         
         while(std::abs(t) < maxd)
         {
             //bool collision = false;
-            float h = do_model(ro + rd * t, 0.0f).x;//calc_intersection(origin, dir, maxd, collision);
+            float h = do_model(ro + rd * t, 0.0f).x;
             
             if(( glm::abs(h) < precis))
             {
@@ -90,7 +90,7 @@ public:
                 if(!pr.empty())
                 {
                     glm::vec3 v = pr.back() - c;
-                    if(glm::length(v) > (.9f ))
+                    if(glm::length(v) > (.4f ))
                         pr.push_back(c);
                 }
                 else
@@ -98,6 +98,7 @@ public:
                 
                 //t = std::abs(t) + precis;
                 t += precis ;
+                //break;
             }
             else
                 t += precis;
@@ -136,7 +137,10 @@ struct collector_manager
     }
 };
 
-
+void run_collector(collector_manager* manager, int index)
+{
+    manager->collectors[index]();
+}
 void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
 {
     collector_manager manager;
@@ -153,8 +157,8 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
     {
         for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
         {
-            glm::vec3 ro(total_width, w, h);
-            glm::vec3 rd(-1.0f, 0.0f, 0.0f);
+            glm::vec3 ro( -total_width, w,  h);
+            glm::vec3 rd(1.0f, 0.0f, 0.0f);
             std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
             
             int index = 0;
@@ -171,8 +175,8 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
                     
                     if(!manager.probes[index].empty())
                         printf("%d probes found\n", (int)manager.probes[index].size());
-                    probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
-                    manager.probes[index].clear();
+                    //probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
+                    //manager.probes[index].clear();
                     break;
                 }
             }
@@ -181,7 +185,7 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
             manager.collectors[index].rd = rd;
             manager.collectors[index].maxd = total_width * 2.;
         
-            manager.threads[index] = std::thread(manager.collectors[index]);
+            manager.threads[index] = std::thread(run_collector, &manager, index);
         }
     }
     
@@ -308,7 +312,7 @@ int main(int argc, const char * argv[]) {
     in.save_nodes("barin");
     in.save_poly("barin");
 
-    tetrahedralize("", &in, &out);
+    tetrahedralize("pnfegV", &in, &out);
 
     // Output mesh to files 'barout.node', 'barout.ele' and 'barout.face'.
     out.save_nodes("barout");
@@ -316,6 +320,7 @@ int main(int argc, const char * argv[]) {
     out.save_faces("barout");
     out.save_neighbors("barout");
     out.save_poly("barout");
+    out.save_faces2smesh("barout");
     
 
     

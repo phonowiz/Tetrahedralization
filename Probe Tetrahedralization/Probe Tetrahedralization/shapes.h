@@ -127,22 +127,21 @@ glm::vec2 plane( glm::vec3 p) {
 glm::vec2 do_model( glm::vec3 p, float /*itime*/ ) {
     
     glm::vec2 d = plane(p);
-    
+
     glm::vec2 q = glm::vec2(sdSphere(p - glm::vec3(0.0f,0.0f,-0.8f), 1.0f),1.0f);
     q = max2(q, glm::vec2(-sdCylinder(p - glm::vec3(0.0f,0.0f,-0.8f), 0.5f),2.0f));
     d = min2(d, q);
-    
+
     d = min2(d, glm::vec2(sdBox(p - glm::vec3(0.0f,0.0f,2.2f), glm::vec3(2.0f,4.0f,0.3f)),2.0f));
-    d = min2(d, glm::vec2(sdBox(p - glm::vec3(0.0,0.0,-2.2), glm::vec3(2.0f,4.0f,0.3f)),3.0f));
-    d = min2(d, glm::bvec2(sdBox(p - glm::vec3(-2.2,0.0,0.0), glm::vec3(0.3f,4.0f,2.0f)),1.0f));
-    
+    d = min2(d, glm::vec2(sdBox(p - glm::vec3(0.0f,0.0f,-2.2f), glm::vec3(2.0f,4.0f,0.3f)),3.0f));
+    d = min2(d, glm::vec2(sdBox(p - glm::vec3(-2.2f,0.0f,0.0f), glm::vec3(0.3f,4.0f,2.0f)),1.0f));
+
     q = glm::vec2(sdBox(p - glm::vec3(-1.0f,0.0f,1.0f), glm::vec3(0.5f,1.0f,0.5f)),1.0f);
-    
     q = max2(q, glm::vec2(-sdBox(p - glm::vec3(-0.5f,0.5f,0.5f), glm::vec3(0.5f,0.7f,0.5f)),3.0f));
-    
+
     d = min2(d, q);
-    
-    //d = min2(d, vec2(sdTorus(p.yxz - vec3(-0.5 + sin(itime*0.25),1.4,0.5), vec2(1.0, 0.3)),5.0));
-    
+
+    //d = min2(d, vec2(sdTorus(p.yxz - vec3(-0.5 + sin(iTime*0.25),1.4,0.5), vec2(1.0, 0.3)),5.0));
+
     return d;
 }
