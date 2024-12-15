@@ -102,14 +102,14 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
     
     static_assert(total_width == total_height);
     
-    float steps =  .5f;
+    float steps =  .75f;
     
     //X PLANE
     for(float w = -total_width * .5f; w < total_width * .5f; w += steps)
     {
         for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
         {
-            glm::vec3 ro( -total_width, w,  h);
+            glm::vec3 ro( -total_width * .5f, w,  h);
             glm::vec3 rd(1.0f, 0.0f, 0.0f);
             std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
             
@@ -125,16 +125,13 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
                         manager.threads[index].join();
                     }
                     
-                    if(!manager.probes[index].empty())
-                        printf("%d probes found\n", (int)manager.probes[index].size());
-     
                     break;
                 }
             }
             
             manager.collectors[index].ro = ro;
             manager.collectors[index].rd = rd;
-            manager.collectors[index].maxd = total_width * 2.;
+            manager.collectors[index].maxd = total_width;
         
             manager.threads[index] = std::thread(run_collector, &manager, index);
         }
@@ -146,102 +143,98 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
         if(t.joinable())
             t.join();
         probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
+        manager.probes[count].clear();
         count++;
     }
     
-    
-//    //Z PLANE
-//    for(float w = -total_width * .5f; w < total_width * .5f; w += steps)
-//    {
-//        for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
-//        {
-//            glm::vec3 ro(w, h, total_height);
-//            glm::vec3 rd(0.0f, 0.0f, -1.0f);
-//
-//            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
-//
-//            //glm::vec3 rd(-1.0f, 0.0f, 0.0f);
-//
-//            int index = 0;
-//            int count = 0;
-//            while(true)
-//            {
-//                index = count++ % manager.collectors.size();
-//                if(manager.collectors[index].is_done())
-//                {
-//                    if(manager.threads[index].joinable())
-//                    {
-//                        manager.threads[index].join();
-//                    }
-//                    probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
-//                    manager.probes[index].clear();
-//                    break;
-//                }
-//            }
-//
-//            manager.collectors[index].ro = ro;
-//            manager.collectors[index].rd = rd;
-//            manager.collectors[index].maxd = total_width * 2.f;
-//
-//            manager.threads[index] = std::thread(manager.collectors[index]);
-//        }
-//    }
-//
-//    count = 0;
-//    for(std::thread& t : manager.threads)
-//    {
-//        if(t.joinable())
-//            t.join();
-//        probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
-//        count++;
-//    }
-//
-//
-//    //Y IS UP!!!
-//    for(float w = -total_width * .5f; w < total_width * .5f; w += steps)
-//    {
-//        for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
-//        {
-//            glm::vec3 ro(w, total_height, h);
-//            glm::vec3 rd(0.0f, -1.0f, 0.0f);
-//
-//            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
-//
-//            //glm::vec3 rd(-1.0f, 0.0f, 0.0f);
-//
-//            int index = 0;
-//            int count = 0;
-//            while(true)
-//            {
-//                index = count++ % manager.collectors.size();
-//                if(manager.collectors[index].is_done())
-//                {
-//                    if(manager.threads[index].joinable())
-//                    {
-//                        manager.threads[index].join();
-//                    }
-//                    probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
-//                    manager.probes[index].clear();
-//                    break;
-//                }
-//            }
-//
-//            manager.collectors[index].ro = ro;
-//            manager.collectors[index].rd = rd;
-//            manager.collectors[index].maxd = total_width * 2.f;
-//
-//            manager.threads[index] = std::thread(manager.collectors[index]);
-//        }
-//    }
-//
-//    count = 0;
-//    for(std::thread& t : manager.threads)
-//    {
-//        if(t.joinable())
-//            t.join();
-//        probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
-//        count++;
-//    }
+    //Z PLANE
+    for(float w = -total_width * .5f * .5f; w < total_width * .5f; w += steps)
+    {
+        for(float h = -total_height * .5f * .5f; h < total_height * .5f; h += steps)
+        {
+            glm::vec3 ro(w, h, total_height * .5f);
+            glm::vec3 rd(0.0f, 0.0f, -1.0f);
+
+            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
+
+            int index = 0;
+            int count = 0;
+            while(true)
+            {
+                index = count++ % manager.collectors.size();
+                if(manager.collectors[index].is_done())
+                {
+                    if(manager.threads[index].joinable())
+                    {
+                        manager.threads[index].join();
+                    }
+                    break;
+                }
+            }
+
+            manager.collectors[index].ro = ro;
+            manager.collectors[index].rd = rd;
+            manager.collectors[index].maxd = total_width;
+
+            manager.threads[index] = std::thread(run_collector, &manager, index);
+        }
+    }
+
+    count = 0;
+    for(std::thread& t : manager.threads)
+    {
+        if(t.joinable())
+            t.join();
+        probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
+        manager.probes[count].clear();
+        count++;
+    }
+
+
+    //Y IS UP!!!
+    for(float w = -total_width * .5f * .25f; w < total_width * .5f; w += steps)
+    {
+        for(float h = -total_height * .5f * .25f; h < total_height * .5f; h += steps)
+        {
+            glm::vec3 ro(w, total_height * .5f, h);
+            glm::vec3 rd(0.0f, -1.0f, 0.0f);
+
+            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
+
+            //glm::vec3 rd(-1.0f, 0.0f, 0.0f);
+
+            int index = 0;
+            int count = 0;
+            while(true)
+            {
+                index = count++ % manager.collectors.size();
+                if(manager.collectors[index].is_done())
+                {
+                    if(manager.threads[index].joinable())
+                    {
+                        manager.threads[index].join();
+                    }
+                    
+                    break;
+                }
+            }
+
+            manager.collectors[index].ro = ro;
+            manager.collectors[index].rd = rd;
+            manager.collectors[index].maxd = total_width * 2.f;
+
+            manager.threads[index] = std::thread(run_collector, &manager, index);
+        }
+    }
+
+    count = 0;
+    for(std::thread& t : manager.threads)
+    {
+        if(t.joinable())
+            t.join();
+        probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
+        count++;
+    }
 
     populate_tetgenio(in, probes);
 }
@@ -252,6 +245,7 @@ int main(int argc, const char * argv[]) {
     tetgenio in, out;
     generate_probes(in, probes);
     
+    printf("total probes count: %d\n", (int)probes.size());
     for(int i = 0; i < probes.size(); ++i)
     {
         std::cout << "d += drawPoint(ro, rd, vec3(" << probes[i].x << "," << probes[i].y << "," << probes[i].z << "));" << std::endl;
@@ -263,6 +257,7 @@ int main(int argc, const char * argv[]) {
 
     tetrahedralize("nV", &in, &out);
 
+    //out.tetrahedronlist
     // Output mesh to files 'barout.node', 'barout.ele' and 'barout.face'.
     out.save_nodes("barout");
     out.save_elements("barout");
