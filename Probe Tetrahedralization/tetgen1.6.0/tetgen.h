@@ -59,7 +59,7 @@
 //   Alternatively, one can use the single-precision (32 bit) 'float' if the
 //   memory is limited.
 
-#define REAL float  // #define REAL float
+#define REAL double  // #define REAL float
 
 // The maximum number of characters in a file name (including the null).
 

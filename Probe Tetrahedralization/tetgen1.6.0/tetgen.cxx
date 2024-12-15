@@ -12119,7 +12119,6 @@ void tetgenmesh::incrementaldelaunay(clock_t& tv)
 
 
   for (i = 4; i < in->numberofpoints; i++) {
-      printf("processing vertex %d out of %d\n", i, in->numberofpoints);
     if (pointtype(permutarray[i]) == UNUSEDVERTEX) {
       setpointtype(permutarray[i], VOLVERTEX);
     }

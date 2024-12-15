@@ -18,37 +18,6 @@ std::atomic_uint32_t segment3d::current_id = 0;
 //static constexpr float maxd = 20.0f;        // max trace distance
 static constexpr float precis = 0.00001;    // precission of the intersection
 
-float calc_intersection( glm::vec3 ro, glm::vec3 rd, float maxd, bool& collision)
-{
-    collision = false;
-    float h = precis * 2.0f;
-    float t = 0.0;
-    float res = -1.0;
-    for( int i=0; (i < 90); i++)          // max number of raymarching iterations is 90
-    {
-        collision = (h >= 0.0f) && ( h < precis);
-        if(collision)
-            break;
-        
-        while(t < maxd)
-        {
-            h = do_model( ro+rd*t, 0 ).x;
-            //h = std::abs(h) + precis;
-            t += std::abs(h) + precis;
-            
-            if(h >= 0.0f)
-                break;
-        }
-
-//        if(h <= 0.0)
-//            t += precis;
-//        else
-//            t += h;
-    }
-    res = t;
-    return res;
-}
-
 
 class probe_collector
 {
@@ -60,13 +29,10 @@ public:
     
     float maxd = 10.0f;
 
-    
     probe_collector(){};
     probe_collector(glm::vec3 ro, glm::vec3 rd) : ro(ro), rd(rd) {}
     
-    bool is_done(){ return *done;}
-    
-    //std::vector<glm::vec3>* probes;
+    bool is_done(){ return *done; }
     
     void operator()()
     {
@@ -76,11 +42,9 @@ public:
         glm::vec3 dir = rd;
         
         std::vector<glm::vec3>& pr = *probes;
-        //pr.clear();
         
         while(std::abs(t) < maxd)
         {
-            //bool collision = false;
             float h = do_model(ro + rd * t, 0.0f).x;
             
             if(( glm::abs(h) < precis))
@@ -95,26 +59,14 @@ public:
                 }
                 else
                     pr.push_back(c);
-                
-                //t = std::abs(t) + precis;
-                t += precis ;
-                //break;
             }
-            else
-                t += precis;
             
-            //origin = origin + dir * std::abs(t);
-            //maxd -= std::abs(t);
-
-            
-            //maxd = std::max(maxd, 0.0f);
-
+            t += precis;
         }
         
         (*done) = true;
     }
 };
-
 
 #define TOTAL_THREADS (20)
 struct collector_manager
@@ -175,8 +127,7 @@ void generate_probes(tetgenio& in, std::vector<glm::vec3>& probes )
                     
                     if(!manager.probes[index].empty())
                         printf("%d probes found\n", (int)manager.probes[index].size());
-                    //probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
-                    //manager.probes[index].clear();
+     
                     break;
                 }
             }
@@ -305,14 +256,12 @@ int main(int argc, const char * argv[]) {
     {
         std::cout << "d += drawPoint(ro, rd, vec3(" << probes[i].x << "," << probes[i].y << "," << probes[i].z << "));" << std::endl;
     }
-
-    //generate_input_tetgen(in);
     
     // Output the PLC to files 'barin.node' and 'barin.poly'.
     in.save_nodes("barin");
     in.save_poly("barin");
 
-    tetrahedralize("pnfegV", &in, &out);
+    tetrahedralize("nV", &in, &out);
 
     // Output mesh to files 'barout.node', 'barout.ele' and 'barout.face'.
     out.save_nodes("barout");
@@ -320,7 +269,7 @@ int main(int argc, const char * argv[]) {
     out.save_faces("barout");
     out.save_neighbors("barout");
     out.save_poly("barout");
-    out.save_faces2smesh("barout");
+    //out.save_faces2smesh("barout");
     
 
     
