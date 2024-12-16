@@ -10,6 +10,7 @@
 		B920D0492D02523D00814FC1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B920D0482D02523D00814FC1 /* main.cpp */; };
 		B920D0512D0264CF00814FC1 /* tetgen.cxx in Sources */ = {isa = PBXBuildFile; fileRef = B920D0502D0264CF00814FC1 /* tetgen.cxx */; };
 		B920D0542D0265C800814FC1 /* predicates.cxx in Sources */ = {isa = PBXBuildFile; fileRef = B920D0532D0265C800814FC1 /* predicates.cxx */; };
+		B9D97FC12D0F9AE9009DA310 /* helpers.h in Sources */ = {isa = PBXBuildFile; fileRef = B920D0562D02E95C00814FC1 /* helpers.h */; settings = {COMPILER_FLAGS = "-O0"; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -141,6 +142,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9D97FC12D0F9AE9009DA310 /* helpers.h in Sources */,
 				B920D0512D0264CF00814FC1 /* tetgen.cxx in Sources */,
 				B920D0492D02523D00814FC1 /* main.cpp in Sources */,
 				B920D0542D0265C800814FC1 /* predicates.cxx in Sources */,

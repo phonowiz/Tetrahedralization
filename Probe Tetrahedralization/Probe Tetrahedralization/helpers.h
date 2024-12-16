@@ -9,8 +9,12 @@
 
 #include "tetgen.h"
 #include "mathematics.h"
+#include "shapes.h"
 #include <vector>
 #include <iostream>
+#include <chrono>
+
+#include "glm/glm.hpp"
 
 
 
@@ -51,7 +55,7 @@
 //
 //    path.pop_back();
 //}
-
+ 
 //bool triangle_intersect_no_edge_or_vertex(const triangle3d& tri1, const triangle3d& tri2, std::vector<vector3d>& vertices)
 //{
 //    vector3d& a1 = vertices[tri1.pt1];
@@ -119,6 +123,7 @@
 //    return intersect;
 //}
 
+float max_distance = 10.0f;
 
 void populate_tetgenio(tetgenio& in,
                        const std::vector<glm::vec3>& vertices)
@@ -239,5 +244,178 @@ void generate_input_tetgen(tetgenio& in)
 //    }
     
     populate_tetgenio(in, vertices);
+}
+
+// based off of https://fizzer.neocities.org/lambertnotangent
+glm::vec3 lambert_no_tangent(glm::vec3 normal, glm::vec2 uv)
+{
+    float theta = 6.283185f * uv.x;
+    uv.y = 2.0f * uv.y - 1.0f;
+    glm::vec3 sphere_point = glm::vec3(sqrt(1.0f - uv.y * uv.y) * glm::vec2(cos(theta), sin(theta)), uv.y);
+    return normalize(normal + sphere_point);
+}
+
+float hash(float x)
+{
+    return glm::fract(sin(219.151f*x)*9012.15f);
+}
+
+glm::vec3 random_ray(glm::vec3 n, glm::vec4 seed)
+{
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    auto duration = now.time_since_epoch();
     
+    auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+    glm::vec2 uv = glm::vec2(hash(51.5f*seed.x + 15.6f*seed.y + 37.1f*seed.z + 13.7f*seed.w + 15.1f*nanoseconds),
+                   hash(19.6f*seed.x + 91.1f*seed.y + 15.1f*seed.z + 21.1f*seed.w + 7.8f*nanoseconds));
+    return lambert_no_tangent(n, uv);
+}
+
+glm::vec3 do_material( glm::vec3 pos, float /*iTime*/ )
+{
+    float k = do_model(pos, 0.0f).y;
+    
+    glm::vec3 c = glm::vec3(0.0);
+    
+    c = glm::mix(c, glm::vec3(.0f,1.0f,.20f), float(k == 1.0f));
+    c = glm::mix(c, glm::vec3(1.0f,0.2f,.1f), float(k == 2.0f));
+    c = glm::mix(c, glm::vec3(0.4f,0.3f,1.0f), float(k == 3.0f));
+    c = glm::mix(c, glm::vec3(1.f,1.f,1.f), float(k == 4.0f));
+    c = glm::mix(c, glm::vec3(0.4f,.0f,0.1f), float(k == 5.0f));
+    
+    return c;//glm::vec(c,0.0);
+}
+
+struct light_info
+{
+    glm::vec3 position;
+    glm::vec3 color;
+} ;
+
+
+//based off of https://www.shadertoy.com/view/4fyfWR
+glm::vec3 pathtrace(glm::vec3 ro, glm::vec3 rd, bool& collision, float& t)
+{
+    //glm::vec3 atten = glm::vec3(1.0f, 1.0f, 1.0f);
+    collision = false;
+    t = precis * 2.0f;
+
+    glm::vec3 result = glm::vec3(0.0f);
+    while(std::abs(t) < max_distance)
+    {
+        float h = do_model(ro + rd * t, 0.0f).x;
+        if(( glm::abs(h) < precis))
+        {
+            //t = 0;
+            //ro = ro + rd * t;
+            //rd = light.position - ro;
+            //rd = glm::normalize(rd);
+            
+            result =  do_material(ro + rd * t, 0.0f);
+            collision = true;
+            break;
+            
+//            bool can_see_light = false;
+//            while( glm::abs(t) < max_distance)
+//            {
+//                glm::vec3 c = ro + rd * t;
+//                glm::vec3 l = light.position - c;
+//
+//                color_gathered *= do_material(c, 0.0f);
+//                if( glm::length(l) <  precis * 2.0f)
+//                {
+//                    result = atte
+//                    can_see_light = false;
+//                    break;
+//                }
+//            }
+//        }
+//        else
+        }
+        t += precis;
+    }
+    
+    return result;
+}
+
+glm::vec3 multiple_bounce_path_trace(glm::vec3 ro, glm::vec3 rd)
+{
+    const int BOUNCE_TOTAL = 5;
+    
+    glm::vec3 color = glm::vec3(0.0f, 0.0f, 0.0f);
+    light_info light =  {};
+    
+    //glm::vec3 original_pos = ro;
+    //these must match the shader..
+    light.position = glm::vec3(0.f, 8.2f, .0f);
+    light.color = glm::vec3(20.0, 20.20, 20.050) * 5.0f;
+    
+    float t = 0.0f;
+    for(int i = 0; i < BOUNCE_TOTAL; ++i)
+    {
+        bool collision = false;
+        glm::vec3 surface_color = pathtrace(ro, rd, collision, t);
+        glm::vec3 light_color = {};
+        glm::vec3 c = ro + rd * t;
+        if(collision)
+        {
+            glm::vec3 to_light_dir = light.position - c;
+            to_light_dir = glm::normalize(to_light_dir);
+            
+            float to_light_t = precis * 2.0f;
+            //glm::vec3 light_color = {};
+            while( glm::abs(to_light_t) < max_distance)
+            {
+                glm::vec3 test = c + to_light_dir * to_light_t;
+                glm::vec3 l = light.position - test;
+                
+                if( glm::length(l) <  precis * 2.0f)
+                {
+                    light_color = light.color;
+                    break;
+                }
+                
+                float h = do_model(test, 0.0f).x;
+                if(( glm::abs(h) < precis))
+                    break;
+                to_light_t += precis;
+            }
+        }
+        
+        //todo: light work goes here
+        color += (surface_color * light_color);
+
+        ro = ro + rd * t;
+        //color *=  c * light_color;
+        
+        glm::vec3 normal = calc_normal(ro, 0.0f);
+        rd = random_ray(normal, glm::vec4(ro, float(i)));
+    }
+    
+    //glm::vec3 pos = original_pos + rd * t;
+    
+//    rd = original_pos - light.position;
+//    rd = glm::normalize(rd);
+//    t = precis * 2.0f;
+//
+//    glm::vec3 light_color = {};
+//    while( glm::abs(t) < max_distance)
+//    {
+//        glm::vec3 c = original_pos + rd * t;
+//        glm::vec3 l = light.position - c;
+//
+//        if( glm::length(l) <  precis * 2.0f)
+//        {
+//            light_color = light.color;
+//            break;
+//        }
+//
+//        float h = do_model(c, 0.0f).x;
+//        if(( glm::abs(h) < precis))
+//            break;
+//
+//        t += precis;
+//    }
+//
+    return color;
 }

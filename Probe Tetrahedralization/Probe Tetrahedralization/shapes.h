@@ -14,75 +14,6 @@
 #include <numbers>
 #include <vector>
 
-/*
-struct material
-{
-    vector3d albedo;
-    vector3d emission;
-    float specular;
-};
-    
-struct sphere
-{
-    vector3d p;
-    float r;
-    material mat;
-    
-    void generate_probes_positions(std::vector<vector3d>& positions);
-};
-
-struct plane
-{
-    vector3d p;
-    vector3d n;
-    material mat;
-    
-    void generate_probes_positions(std::vector<vector3d>& positions);
-};
-    
-struct disk
-{
-    vector3d p;
-    vector3d n;
-    float r;
-    material mat;
-    
-    void generate_probes_positions(std::vector<vector3d>& positions);
-};
-
-
-void sphere::generate_probes_positions(std::vector<vector3d>& positions)
-{
-    constexpr float to_360 = 2.0f * std::numbers::pi;
-    constexpr float to_180 = std::numbers::pi;
-    
-    constexpr float steps = 30.0f;
-    constexpr float to_360_steps = to_360 / steps;
-    constexpr float to_180_steps = to_180 / steps;
-    
-    for(float theta = 0.0f; theta < to_360; theta += to_360_steps )
-    {
-        for(float phi = 0.0f; phi < to_180; phi += to_180_steps)
-        {
-            float x = r * std::cosf(theta) * std::sinf(phi);
-            float y = r * std::sinf(theta) * std::sinf(phi);
-            float z = r * std::cosf(phi);
-            
-            vector3d surface(x, y, z);
-            vector3d pos = surface + p;
-            positions.push_back(pos);
-            
-        }
-    }
-}
-
-void plane::generate_probes_positions(std::vector3d<vector)
-{
-
-}
-
-*/
-
 
 glm::vec2 min2(glm::vec2 a, glm::vec2 b)
 {
@@ -144,4 +75,21 @@ glm::vec2 do_model( glm::vec3 p, float /*itime*/ ) {
     //d = min2(d, vec2(sdTorus(p.yxz - vec3(-0.5 + sin(iTime*0.25),1.4,0.5), vec2(1.0, 0.3)),5.0));
 
     return d;
+}
+
+
+glm::vec3 calc_normal( glm::vec3 p, float /*iTime*/ )
+{
+
+    const float eps = 0.0001;    // precision of the normal computation
+
+    const glm::vec3 v1 = glm::vec3( 1.0f,-1.0f,-1.0f);
+    const glm::vec3 v2 = glm::vec3(-1.0f,-1.0f, 1.0f);
+    const glm::vec3 v3 = glm::vec3(-1.0f, 1.0f,-1.0f);
+    const glm::vec3 v4 = glm::vec3( 1.0f, 1.0f, 1.0f);
+
+    return normalize( v1*do_model( p + v1*eps, 0.0f ).x +
+                      v2*do_model( p + v2*eps, 0.0f ).x +
+                      v3*do_model( p + v3*eps, 0.0f ).x +
+                      v4*do_model( p + v4*eps, 0.0f ).x );
 }
