@@ -13,6 +13,7 @@
 #include <vector>
 #include <iostream>
 #include <chrono>
+#include <random>
 
 #include "glm/glm.hpp"
 
@@ -123,10 +124,98 @@
 //    return intersect;
 //}
 
+
+struct probe_info
+{
+    glm::vec3 position = {};
+    sh9_color sh_color = {};
+};
+
+class probe_collector
+{
+public:
+    glm::vec3 ro = glm::vec3(0.0f);
+    glm::vec3 rd = glm::vec3(0.0f);
+    std::atomic<bool>* done = nullptr;
+    std::vector<probe_info>* probes = nullptr;
+    
+    float maxd = 10.0f;
+
+    probe_collector(){};
+    probe_collector(glm::vec3 ro, glm::vec3 rd) : ro(ro), rd(rd) {}
+    
+    bool is_done(){ return *done; }
+    
+    void operator()()
+    {
+        (*done) = false;
+        float t = 0.0f;
+        glm::vec3 origin = ro;
+        glm::vec3 dir = rd;
+        
+        std::vector<probe_info>& pr = *probes;
+        
+        while(std::abs(t) < maxd)
+        {
+            float h = do_model(ro + rd * t, 0.0f).x;
+            
+            if(( glm::abs(h) < precis))
+            {
+                glm::vec3 c = origin + dir * t;
+                probe_info info = {};
+                info.position = c;
+                if(!pr.empty())
+                {
+                    glm::vec3 v = pr.back().position - c;
+                    if(glm::length(v) > (.4f ))
+                    {
+                        pr.push_back(info);
+                    }
+                }
+                else
+                    pr.push_back(info);
+            }
+            
+            t += precis;
+        }
+        
+        (*done) = true;
+    }
+};
+
+struct tetrahedra
+{
+    std::array<uint, 4> neighbors = {};
+    std::array<uint, 4> probes = {};
+};
+
+#define TOTAL_THREADS (20)
+struct collector_manager
+{
+
+    std::array<std::thread, TOTAL_THREADS>         threads;
+    std::array<probe_collector, TOTAL_THREADS>     collectors;
+    std::array<std::atomic<bool>, TOTAL_THREADS>   dones;
+    std::array<std::vector<probe_info>, TOTAL_THREADS> probes;
+    
+    collector_manager()
+    {
+        std::fill(dones.begin(), dones.end(), true);
+        
+        for( int i = 0; i < TOTAL_THREADS; ++i)
+        {
+            collectors[i].done = &dones[i];
+            collectors[i].probes = &probes[i];
+        }
+    }
+};
+
 float max_distance = 10.0f;
 
+
+
 void populate_tetgenio(tetgenio& in,
-                       const std::vector<glm::vec3>& vertices)
+                       const std::vector<probe_info>& vertices)
 {
     in.firstnumber = 0;
     
@@ -135,16 +224,16 @@ void populate_tetgenio(tetgenio& in,
     
     for(int i = 0, pnt = 0; i < in.numberofpoints; i++, pnt += 3)
     {
-        in.pointlist[pnt + 0] = vertices[i].x;
-        in.pointlist[pnt + 1] = vertices[i].y;
-        in.pointlist[pnt + 2] = vertices[i].z;
+        in.pointlist[pnt + 0] = vertices[i].position.x;
+        in.pointlist[pnt + 1] = vertices[i].position.y;
+        in.pointlist[pnt + 2] = vertices[i].position.z;
     }
     
     in.numberoffacets = 0;//(int)triangles.size();
     in.facetlist = nullptr;//new tetgenio::facet[in.numberoffacets];
     in.facetmarkerlist = nullptr;//new int[in.numberoffacets];
     
-//    int count = 0;
+//    int count = 0;ß
 //    for(const triangle3d& tri : triangles)
 //    {
 //        tetgenio::facet *f = &in.facetlist[count];
@@ -173,14 +262,16 @@ void generate_input_tetgen(tetgenio& in)
 
     in.firstnumber = 0;
     in.numberofpoints = max_vertices;
-    std::vector<glm::vec3> vertices;
+    std::vector<probe_info> vertices;
 
     std::unordered_set<triangle3d> triangle_set;
 
     for(int i = 0; i < max_vertices; ++i)
     {
+        probe_info info = {};
         glm::vec3 vec(std::fmod(rand(), 1000.f), std::fmod(rand(), 1000.0f), std::fmod(rand(), 1000.f));
-        vertices.push_back(vec);
+        info.position = vec;
+        vertices.push_back(info);
     }
 //
 //    for(int i = 0; i < max_vertices; ++i)
@@ -268,14 +359,37 @@ glm::vec3 random_ray(glm::vec3 n, glm::vec4 seed)
 //    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 //    auto duration = now.time_since_epoch();
     
-    float nanoseconds = float(std::time(0));//std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
-    glm::vec2 uv = glm::vec2(hash(51.5f*seed.x + 15.6f*seed.y + 37.1f*seed.z + 13.7f*seed.w + 15.1f*nanoseconds),
-                   hash(19.6f*seed.x + 91.1f*seed.y + 15.1f*seed.z + 21.1f*seed.w + 7.8f*nanoseconds));
+//    float nanoseconds = (float)rand();//float(std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
+//    glm::vec2 uv = glm::vec2(hash(51.5f*seed.x + 15.6f*seed.y + 37.1f*seed.z + 13.7f*seed.w + 15.1f*nanoseconds),
+//                   hash(19.6f*seed.x + 91.1f*seed.y + 15.1f*seed.z + 21.1f*seed.w + 7.8f*nanoseconds));
+//
+//    assert(!(std::isnan(uv.x)) && !(std::isnan(uv.x)));
+//    glm::vec3 temp =lambert_no_tangent(n, uv);
+//    assert(!isnan(temp.x) && !isnan(temp.y) && !isnan(temp.z));
+//    return temp;
     
-    assert(!(std::isnan(uv.x)) && !(std::isnan(uv.x)));
-    glm::vec3 temp =lambert_no_tangent(n, uv);
-    assert(!isnan(temp.x) && !isnan(temp.y) && !isnan(temp.z));
-    return temp;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+    
+    while(true)
+    {
+        glm::vec3 dir = {};
+        dir.x = dis(gen) * 2.f - 1.f;
+        dir.y = dis(gen) * 2.f - 1.f;
+        dir.z = dis(gen) * 2.f - 1.f;
+        
+        if (glm::length(dir) == 0.0f)
+            continue;
+        
+        dir = glm::normalize(dir);
+        if(glm::dot(dir, n) < 0.0f)
+            dir *= -1.0f;
+        
+        return dir;
+    }
+    
+    
 }
 
 glm::vec3 do_material( glm::vec3 pos, float /*iTime*/ )
@@ -345,17 +459,19 @@ glm::vec3 pathtrace(glm::vec3 ro, glm::vec3 rd, bool& collision, float& t)
     return result;
 }
 
-glm::vec3 multiple_bounce_path_trace(glm::vec3 ro, glm::vec3 rd)
+glm::vec3 poor_man_raytracer(glm::vec3 ro, glm::vec3 rd)
 {
     const int BOUNCE_TOTAL = 2;
     
     glm::vec3 color = glm::vec3(0.0f, 0.0f, 0.0f);
     light_info light =  {};
     
-    //glm::vec3 original_pos = ro;
     //these must match the shader..
     light.position = glm::vec3(0.f, 8.2f, .0f);
     light.color = glm::vec3(20.0, 20.20, 20.050) * 5.0f;
+    
+    glm::vec3 to_light_dir = glm::vec3(0.0f);
+    glm::vec3 surface_normal = glm::vec3(0.0f);
     
     float t = 0.0f;
     for(int i = 0; i < BOUNCE_TOTAL; ++i)
@@ -366,11 +482,12 @@ glm::vec3 multiple_bounce_path_trace(glm::vec3 ro, glm::vec3 rd)
         glm::vec3 c = ro + rd * t;
         if(collision)
         {
-            glm::vec3 to_light_dir = light.position - c;
+            to_light_dir = light.position - c;
             to_light_dir = glm::normalize(to_light_dir);
+            surface_normal = calc_normal(c, 0.0f);
             
             float to_light_t = precis * 2.0f;
-            //glm::vec3 light_color = {};
+
             while( glm::abs(to_light_t) < max_distance)
             {
                 glm::vec3 test = c + to_light_dir * to_light_t;
@@ -383,46 +500,20 @@ glm::vec3 multiple_bounce_path_trace(glm::vec3 ro, glm::vec3 rd)
                 }
                 
                 float h = do_model(test, 0.0f).x;
-                if(( glm::abs(h) < precis))
+                bool occluded = (glm::abs(h) < precis);
+                if(occluded)
                     break;
                 to_light_t += precis;
             }
         }
         
-        //todo: light work goes here
-        color += (surface_color * light_color);
+        color += (surface_color * light_color) * glm::max(0.0f, glm::dot(to_light_dir, surface_normal));
 
         ro = ro + rd * t;
-        //color *=  c * light_color;
         
         glm::vec3 normal = calc_normal(ro, 0.0f);
         rd = random_ray(normal, glm::vec4(ro, float(i)));
     }
     
-    //glm::vec3 pos = original_pos + rd * t;
-    
-//    rd = original_pos - light.position;
-//    rd = glm::normalize(rd);
-//    t = precis * 2.0f;
-//
-//    glm::vec3 light_color = {};
-//    while( glm::abs(t) < max_distance)
-//    {
-//        glm::vec3 c = original_pos + rd * t;
-//        glm::vec3 l = light.position - c;
-//
-//        if( glm::length(l) <  precis * 2.0f)
-//        {
-//            light_color = light.color;
-//            break;
-//        }
-//
-//        float h = do_model(c, 0.0f).x;
-//        if(( glm::abs(h) < precis))
-//            break;
-//
-//        t += precis;
-//    }
-//
     return color;
 }

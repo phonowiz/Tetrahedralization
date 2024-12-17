@@ -21,6 +21,7 @@
 #include <array>
 #include <unordered_set>
 #include <numbers>
+#include <thread>
 
 const float precis = 0.00001f;   // precission of the intersection
 
