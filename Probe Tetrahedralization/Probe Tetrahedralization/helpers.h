@@ -252,6 +252,9 @@ glm::vec3 lambert_no_tangent(glm::vec3 normal, glm::vec2 uv)
     float theta = 6.283185f * uv.x;
     uv.y = 2.0f * uv.y - 1.0f;
     glm::vec3 sphere_point = glm::vec3(sqrt(1.0f - uv.y * uv.y) * glm::vec2(cos(theta), sin(theta)), uv.y);
+    
+    assert(!isnan(sphere_point.x) && !isnan(sphere_point.y) && !isnan(sphere_point.z));
+    assert(!isnan(normal.x) && !isnan(normal.y) && !isnan(normal.z));
     return normalize(normal + sphere_point);
 }
 
@@ -262,13 +265,17 @@ float hash(float x)
 
 glm::vec3 random_ray(glm::vec3 n, glm::vec4 seed)
 {
-    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    auto duration = now.time_since_epoch();
+//    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+//    auto duration = now.time_since_epoch();
     
-    auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+    float nanoseconds = float(std::time(0));//std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
     glm::vec2 uv = glm::vec2(hash(51.5f*seed.x + 15.6f*seed.y + 37.1f*seed.z + 13.7f*seed.w + 15.1f*nanoseconds),
                    hash(19.6f*seed.x + 91.1f*seed.y + 15.1f*seed.z + 21.1f*seed.w + 7.8f*nanoseconds));
-    return lambert_no_tangent(n, uv);
+    
+    assert(!(std::isnan(uv.x)) && !(std::isnan(uv.x)));
+    glm::vec3 temp =lambert_no_tangent(n, uv);
+    assert(!isnan(temp.x) && !isnan(temp.y) && !isnan(temp.z));
+    return temp;
 }
 
 glm::vec3 do_material( glm::vec3 pos, float /*iTime*/ )
@@ -340,7 +347,7 @@ glm::vec3 pathtrace(glm::vec3 ro, glm::vec3 rd, bool& collision, float& t)
 
 glm::vec3 multiple_bounce_path_trace(glm::vec3 ro, glm::vec3 rd)
 {
-    const int BOUNCE_TOTAL = 5;
+    const int BOUNCE_TOTAL = 2;
     
     glm::vec3 color = glm::vec3(0.0f, 0.0f, 0.0f);
     light_info light =  {};

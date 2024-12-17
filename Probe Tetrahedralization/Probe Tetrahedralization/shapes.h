@@ -81,15 +81,20 @@ glm::vec2 do_model( glm::vec3 p, float /*itime*/ ) {
 glm::vec3 calc_normal( glm::vec3 p, float /*iTime*/ )
 {
 
-    const float eps = 0.0001;    // precision of the normal computation
+    const float eps = 0.001;    // precision of the normal computation
 
     const glm::vec3 v1 = glm::vec3( 1.0f,-1.0f,-1.0f);
     const glm::vec3 v2 = glm::vec3(-1.0f,-1.0f, 1.0f);
     const glm::vec3 v3 = glm::vec3(-1.0f, 1.0f,-1.0f);
     const glm::vec3 v4 = glm::vec3( 1.0f, 1.0f, 1.0f);
 
-    return normalize( v1*do_model( p + v1*eps, 0.0f ).x +
-                      v2*do_model( p + v2*eps, 0.0f ).x +
-                      v3*do_model( p + v3*eps, 0.0f ).x +
-                      v4*do_model( p + v4*eps, 0.0f ).x );
+    glm::vec3 res = v1*do_model( p + v1*eps, 0.0f ).x +
+                        v2*do_model( p + v2*eps, 0.0f ).x +
+                        v3*do_model( p + v3*eps, 0.0f ).x +
+                        v4*do_model( p + v4*eps, 0.0f ).x ;
+    
+    if(glm::length(res) == 0.0f)
+        return glm::vec3(0.0f);
+    
+    return normalize(res);
 }

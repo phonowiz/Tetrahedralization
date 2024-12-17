@@ -240,14 +240,20 @@ void light_probes(std::vector<glm::vec3>& probes)
         printf("path tracing probe: %f, %f, %f\n", p.x, p.y, p.z);
         
         sh9_color sh_color = {};
-        const float samples = 10;
+        const float samples = 30;
         for(int i = 0; i < samples; i++)
         {
             glm::vec3 normal = calc_normal(p, 0.0f);
+            
+//            if(normal == glm::vec3(0.0f))
+//                continue;;
+            assert(!std::isnan(normal.x) && !std::isnan(normal.y) && !std::isnan(normal.z));
+            assert(normal.x != 0 || normal.y != 0 || normal.z != 0 );
             glm::vec3 rd = random_ray(normal, glm::vec4(p, 0.0f));
+            assert(!std::isnan(rd.x) && !std::isnan(rd.y) && !std::isnan(rd.z));
             glm::vec3 c = multiple_bounce_path_trace(p, rd);
             
-            sh9 sh_normal = sh_evaluate(normal);
+            sh9 sh_normal = sh_evaluate(rd);
             
             sh_color.red =  sh_add(sh_color.red, sh_scale(sh_normal, c.r));
             sh_color.green = sh_add(sh_color.green, sh_scale(sh_normal, c.g));
@@ -258,9 +264,16 @@ void light_probes(std::vector<glm::vec3>& probes)
         sh_color.red = sh_scale(sh_color.red, sh_factor);
         sh_color.green = sh_scale(sh_color.green, sh_factor);
         sh_color.blue = sh_scale(sh_color.blue, sh_factor);
-        printf("\tcolor R: %f, %f, %f, %f, %f, %f, %f, %f, %f\n", sh_color.red[0], sh_color.red[1], sh_color.red[2], sh_color.red[3], sh_color.red[4], sh_color.red[5], sh_color.red[6], sh_color.red[7], sh_color.red[8]);
-        printf("\tcolor G: %f, %f, %f, %f, %f, %f, %f, %f, %f\n", sh_color.green[0], sh_color.green[1], sh_color.green[2], sh_color.green[3], sh_color.green[4], sh_color.green[5], sh_color.green[6], sh_color.green[7], sh_color.green[8]);
-        printf("\tcolor B: %f, %f, %f, %f, %f, %f, %f, %f, %f\n", sh_color.blue[0], sh_color.blue[1], sh_color.blue[2], sh_color.blue[3], sh_color.blue[4], sh_color.blue[5], sh_color.blue[6], sh_color.blue[7], sh_color.blue[8]);
+        
+        for(int i = 0; i < 9; ++i)
+        {
+            assert(!std::isnan(sh_color.red[i]));
+            assert(!std::isnan(sh_color.green[i]));
+            assert(!std::isnan(sh_color.blue[i]));
+        }
+        printf("\tcolor R: %f.4, %f.4, %f.4, %f.4, %f.4, %f.4, %f.4, %f.4, %f.4\n", sh_color.red[0], sh_color.red[1], sh_color.red[2], sh_color.red[3], sh_color.red[4], sh_color.red[5], sh_color.red[6], sh_color.red[7], sh_color.red[8]);
+        printf("\tcolor G: %f.4, %f.4, %f.4, %f.4, %f.4, %f.4, %f.4, %f.4, %f.4\n", sh_color.green[0], sh_color.green[1], sh_color.green[2], sh_color.green[3], sh_color.green[4], sh_color.green[5], sh_color.green[6], sh_color.green[7], sh_color.green[8]);
+        printf("\tcolor B: %f.4, %f.4, %f.4, %f.4, %f.4, %f.4, %f.4, %f.4, %f.4\n", sh_color.blue[0], sh_color.blue[1], sh_color.blue[2], sh_color.blue[3], sh_color.blue[4], sh_color.blue[5], sh_color.blue[6], sh_color.blue[7], sh_color.blue[8]);
     }
 }
 int main(int argc, const char * argv[]) {

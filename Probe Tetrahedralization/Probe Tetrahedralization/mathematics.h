@@ -44,6 +44,7 @@ sh9 sh_scale(sh9 sh, float s)
 {
     for( int i = 0; i < 9; ++i)
     {
+        assert(!std::isnan(sh[i]));
         sh[i]   *= s;
     }
     
@@ -51,6 +52,7 @@ sh9 sh_scale(sh9 sh, float s)
 }
 sh9 sh_add( sh9 sh1, sh9 sh2)
 {
+
     sh9 result = {};
     
     result[0] = sh1[0] + sh2[0];
@@ -63,6 +65,12 @@ sh9 sh_add( sh9 sh1, sh9 sh2)
     result[7] = sh1[7] + sh2[7];
     result[8] = sh1[8] + sh2[8];
     
+    for(int i = 0; i < 9; ++i)
+    {
+        assert(!std::isnan(sh1[i]));
+        assert(!std::isnan(sh2[i]));
+        assert(!std::isnan(result[i]));
+    }
     return result;
 }
 sh9 sh_evaluate(glm::vec3 normal)
@@ -77,6 +85,12 @@ sh9 sh_evaluate(glm::vec3 normal)
     result[6]     = 0.946174695758f * normal.z * normal.z - 0.315391565253f;
     result[7]     = -1.09254843059f * normal.x*normal.z;
     result[8]     = 0.546274215296f * (normal.x*normal.x - normal.y * normal.y);
+    
+    for(int i = 0; i < 9; ++i)
+    {
+        assert(!std::isnan(result[i]));
+        //assert(!std::isnan(sh2[i]));
+    }
     
     return result;
 }
