@@ -9,6 +9,8 @@
 #include "helpers.h"
 #include "shapes.h"
 
+#include <future>
+#include <thread>
 #include <queue>
 #include <iostream>
 
@@ -164,12 +166,16 @@ void generate_probes(tetgenio& in, std::vector<probe_info>& probes )
 
 void light_probes(std::vector<probe_info>& probes)
 {
+
+    static const size_t Size = 50;
+    std::array<std::future<void>, Size>   futures;
+    std::array<tracing_result, Size>     results = {};
     for(probe_info& p : probes)
     {
         printf("path tracing probe: %f, %f, %f\n", p.position.x, p.position.y, p.position.z);
         
         //sh9_color sh_color = {};
-        const float samples = 30;
+        const float samples = Size;
         for(int i = 0; i < samples; i++)
         {
             glm::vec3 normal = calc_normal(p.position, 0.0f);
@@ -178,13 +184,21 @@ void light_probes(std::vector<probe_info>& probes)
             assert(normal.x != 0 || normal.y != 0 || normal.z != 0 );
             glm::vec3 rd = random_ray(normal, glm::vec4(p.position, 0.0f));
             assert(!std::isnan(rd.x) && !std::isnan(rd.y) && !std::isnan(rd.z));
-            glm::vec3 c = poor_man_raytracer(p.position, rd);
             
-            sh9 sh_dir = sh_evaluate(rd);
+            futures[i] = std::async(std::launch::async, &poor_man_pathtracer, p.position, rd, results.data(), i);
+        }
+        
+        for(int i = 0; i < futures.size(); ++i)
+        {
+            futures[i].wait();
             
-            p.sh_color.red =  sh_add(p.sh_color.red, sh_scale(sh_dir, c.r));
-            p.sh_color.green = sh_add(p.sh_color.green, sh_scale(sh_dir, c.g));
-            p.sh_color.blue = sh_add(p.sh_color.blue, sh_scale(sh_dir, c.b));
+            sh9 sh_dir = sh_evaluate(results[i].dir);
+            
+            p.sh_color.red =  sh_add(p.sh_color.red, sh_scale(sh_dir, results[i].color.r));
+            p.sh_color.green = sh_add(p.sh_color.green, sh_scale(sh_dir, results[i].color.g));
+            p.sh_color.blue = sh_add(p.sh_color.blue, sh_scale(sh_dir, results[i].color.b));
+            
+            
         }
         const float sh_factor = (4.0f * M_PI) / samples;
         
@@ -206,8 +220,6 @@ void light_probes(std::vector<probe_info>& probes)
 
 void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vector<tetrahedra>& tetrahedras)
 {
-    //tetrahedra* tetrahedras = new tetrahedra[total_tetrahedras];
-    
     assert(out.firstnumber == 0 && "this will not work unless first number is zero");
     assert(out.numberofcorners == 4);
     for(int i = 0; i < out.numberoftetrahedra; ++i)

@@ -30,8 +30,8 @@
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "269"
-            endingLineNumber = "269"
+            startingLineNumber = "275"
+            endingLineNumber = "275"
             landmarkName = "generate_input_tetgen(in)"
             landmarkType = "9">
          </BreakpointContent>
@@ -78,8 +78,8 @@
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "291"
-            endingLineNumber = "291"
+            startingLineNumber = "297"
+            endingLineNumber = "297"
             landmarkName = "generate_input_tetgen(in)"
             landmarkType = "9">
          </BreakpointContent>
@@ -110,8 +110,8 @@
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "304"
-            endingLineNumber = "304"
+            startingLineNumber = "310"
+            endingLineNumber = "310"
             landmarkName = "generate_input_tetgen(in)"
             landmarkType = "9">
          </BreakpointContent>
@@ -158,8 +158,8 @@
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "315"
-            endingLineNumber = "315"
+            startingLineNumber = "321"
+            endingLineNumber = "321"
             landmarkName = "generate_input_tetgen(in)"
             landmarkType = "9">
          </BreakpointContent>
@@ -206,9 +206,9 @@
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "478"
-            endingLineNumber = "478"
-            landmarkName = "poor_man_raytracer(ro, rd)"
+            startingLineNumber = "491"
+            endingLineNumber = "491"
+            landmarkName = "poor_man_pathtracer(ro, rd, results, index)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -222,25 +222,9 @@
             filePath = "Probe Tetrahedralization/helpers.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "480"
-            endingLineNumber = "480"
-            landmarkName = "poor_man_raytracer(ro, rd)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "7855E646-E8E3-4AAD-AE6E-104685C4598C"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Probe Tetrahedralization/main.cpp"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "185"
-            endingLineNumber = "185"
-            landmarkName = "light_probes(probes)"
+            startingLineNumber = "493"
+            endingLineNumber = "493"
+            landmarkName = "poor_man_pathtracer(ro, rd, results, index)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -270,8 +254,8 @@
             filePath = "Probe Tetrahedralization/main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "304"
-            endingLineNumber = "304"
+            startingLineNumber = "316"
+            endingLineNumber = "316"
             landmarkName = "main(argc, argv)"
             landmarkType = "9">
          </BreakpointContent>

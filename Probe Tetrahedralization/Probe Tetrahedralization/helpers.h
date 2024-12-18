@@ -14,7 +14,7 @@
 #include <iostream>
 #include <chrono>
 #include <random>
-
+#include <thread>
 #include "glm/glm.hpp"
 
 
@@ -129,6 +129,12 @@ struct probe_info
 {
     glm::vec3 position = {};
     sh9_color sh_color = {};
+};
+
+struct tracing_result
+{
+    glm::vec3 color;
+    glm::vec3 dir;
 };
 
 class probe_collector
@@ -459,7 +465,14 @@ glm::vec3 pathtrace(glm::vec3 ro, glm::vec3 rd, bool& collision, float& t)
     return result;
 }
 
-glm::vec3 poor_man_raytracer(glm::vec3 ro, glm::vec3 rd)
+template<size_t Size =30>
+struct pathtracer_info
+{
+    std::array<tracing_result, Size> results;
+};
+
+
+static void poor_man_pathtracer(glm::vec3 ro, glm::vec3 rd, tracing_result* results, int index)
 {
     const int BOUNCE_TOTAL = 2;
     
@@ -515,5 +528,7 @@ glm::vec3 poor_man_raytracer(glm::vec3 ro, glm::vec3 rd)
         rd = random_ray(normal, glm::vec4(ro, float(i)));
     }
     
-    return color;
+    //T& r = *results;
+    results[index].color = color;
+    results[index].dir = rd;
 }
