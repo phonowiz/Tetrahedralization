@@ -167,7 +167,7 @@ void generate_probes(tetgenio& in, std::vector<probe_info>& probes )
 void light_probes(std::vector<probe_info>& probes)
 {
 
-    static const size_t Size = 50;
+    static const size_t Size = 20;
     std::array<std::future<void>, Size>   futures;
     std::array<tracing_result, Size>     results = {};
     for(probe_info& p : probes)
@@ -217,6 +217,8 @@ void light_probes(std::vector<probe_info>& probes)
         printf("\tcolor B: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.blue[0], p.sh_color.blue[1], p.sh_color.blue[2], p.sh_color.blue[3], p.sh_color.blue[4], p.sh_color.blue[5], p.sh_color.blue[6], p.sh_color.blue[7], p.sh_color.blue[8]);
     }
 }
+
+
 
 void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vector<tetrahedra>& tetrahedras)
 {
@@ -289,8 +291,44 @@ void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vect
     {
         std::cout << "d += drawPoint(ro, rd, vec3(" << probes[i].position.x << "," << probes[i].position.y << "," << probes[i].position.z << "), " << i << ");" << std::endl;
     }
+}
+
+int find_origin_tetrahedra( std::vector<tetrahedra>& tetrahedras, std::vector<probe_info>& probes)
+{
+    glm::vec3 target_position(0.0f, .5f, 0.0f);
+    int tetra_index = 0;
+
+     while(true)
+    {
+        glm::vec3 column0 = probes[tetrahedras[tetra_index].probes[0]].position - probes[tetrahedras[tetra_index].probes[3]].position;
+        glm::vec3 column1 = probes[tetrahedras[tetra_index].probes[1]].position - probes[tetrahedras[tetra_index].probes[3]].position;
+        glm::vec3 column2 = probes[tetrahedras[tetra_index].probes[2]].position - probes[tetrahedras[tetra_index].probes[3]].position;
+
+        glm::mat3 mat(column0, column1, column2);
+        
+        glm::vec3 abc = glm::inverse(mat) * (target_position - probes[tetrahedras[tetra_index].probes[3]].position);
+        float d = 1.0f - abc.x - abc.y - abc.z;
+        glm::vec4 coords(abc, d);
+        
+        const float epsilon = 0.000001f;
+        assert( std::abs(1.0f - (coords.x + coords.y + coords.z + coords.w)) <= (epsilon));
+        
+        float min_coord = std::min(std::min(std::min(coords.x, coords.y), coords.z), coords.w);
+        
+        if(min_coord >= 0.0f)
+            break;
+        int old_tetra = tetra_index;
+        tetra_index = tetrahedras[old_tetra].neighbors[3];
+        
+        if(min_coord == coords.x)
+            tetra_index = tetrahedras[old_tetra].neighbors[0];
+        else if(min_coord == coords.y)
+            tetra_index = tetrahedras[old_tetra].neighbors[1];
+        else if(min_coord == coords.z)
+            tetra_index = tetrahedras[old_tetra].neighbors[2];
+    }
     
-    
+    return tetra_index;
 }
 int main(int argc, const char * argv[]) {
     
@@ -309,7 +347,9 @@ int main(int argc, const char * argv[]) {
     tetrahedralize("nV", &in, &out);
 
     write_probe_array(probes, out, tetrahedras);
-    //out.tetrahedronlist
+    
+    int origin_tetrahedra = find_origin_tetrahedra(tetrahedras, probes);
+    
     // Output mesh to files 'barout.node', 'barout.ele' and 'barout.face'.
     out.save_nodes("barout");
     out.save_elements("barout");
