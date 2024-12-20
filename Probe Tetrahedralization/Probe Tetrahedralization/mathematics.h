@@ -30,7 +30,6 @@ struct sh9
     std::array<float, 9> sh  = {};
     
     float& operator[](int index) {return sh[index];}
-    
 };
 
 struct sh9_color
@@ -94,6 +93,20 @@ sh9 sh_evaluate(glm::vec3 normal)
     }
     
     return result;
+}
+
+float sh_dot(sh9& a, sh9& b)
+{
+    float result = 0.0f;
+    for(int i = 0; i < 9; ++i)
+        result += a[i] * b[i];
+    
+    return result;
+}
+float sh_unproject(sh9& functionSh, glm::vec3 normal)
+{
+    sh9 sh = sh_evaluate(normal);
+    return sh_dot(functionSh, sh);
 }
 
 struct segment3d {

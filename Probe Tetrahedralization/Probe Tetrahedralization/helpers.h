@@ -193,6 +193,7 @@ struct tetrahedra
 {
     std::array<uint, 4> neighbors = {};
     std::array<uint, 4> probes = {};
+    glm::mat3           matrix = glm::mat3(1.0f);
 };
 
 #define TOTAL_THREADS (20)
