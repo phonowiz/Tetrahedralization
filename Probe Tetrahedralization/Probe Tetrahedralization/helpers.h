@@ -127,8 +127,8 @@
 
 struct probe_info
 {
-    glm::vec3 position = {};
     sh9_color sh_color = {};
+    glm::vec3 position = {};
 };
 
 struct tracing_result
@@ -191,8 +191,8 @@ public:
 
 struct tetrahedra
 {
-    std::array<uint, 4> neighbors = {};
-    std::array<uint, 4> probes = {};
+    glm::ivec4 neighbors = {};
+    glm::ivec4 probes = {};
     glm::mat3           matrix = glm::mat3(1.0f);
 };
 
@@ -352,7 +352,7 @@ glm::vec3 lambert_no_tangent(glm::vec3 normal, glm::vec2 uv)
     glm::vec3 sphere_point = glm::vec3(sqrt(1.0f - uv.y * uv.y) * glm::vec2(cos(theta), sin(theta)), uv.y);
     
     assert(!isnan(sphere_point.x) && !isnan(sphere_point.y) && !isnan(sphere_point.z));
-    assert(!isnan(normal.x) && !isnan(normal.y) && !isnan(normal.z));
+    assert(!isnan(normal.x) && !isnan(normal.x) && !isnan(normal.z));
     return normalize(normal + sphere_point);
 }
 

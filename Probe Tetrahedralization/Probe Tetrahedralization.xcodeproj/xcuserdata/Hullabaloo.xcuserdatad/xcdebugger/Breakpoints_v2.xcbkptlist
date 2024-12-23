@@ -46,8 +46,8 @@
             filePath = "Probe Tetrahedralization/mathematics.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "212"
-            endingLineNumber = "212"
+            startingLineNumber = "221"
+            endingLineNumber = "221"
             landmarkName = "triangle3d"
             landmarkType = "14">
          </BreakpointContent>
@@ -62,8 +62,8 @@
             filePath = "Probe Tetrahedralization/mathematics.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "142"
-            endingLineNumber = "142"
+            startingLineNumber = "151"
+            endingLineNumber = "151"
             landmarkName = "unknown"
             landmarkType = "0">
          </BreakpointContent>
@@ -190,10 +190,10 @@
             filePath = "Probe Tetrahedralization/mathematics.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "128"
-            endingLineNumber = "128"
-            landmarkName = "operator==(rhs)"
-            landmarkType = "7">
+            startingLineNumber = "137"
+            endingLineNumber = "137"
+            landmarkName = "segment3d"
+            landmarkType = "14">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -238,10 +238,10 @@
             filePath = "Probe Tetrahedralization/mathematics.h"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "129"
-            endingLineNumber = "129"
-            landmarkName = "operator==(rhs)"
-            landmarkType = "7">
+            startingLineNumber = "138"
+            endingLineNumber = "138"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -254,8 +254,8 @@
             filePath = "Probe Tetrahedralization/main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "356"
-            endingLineNumber = "356"
+            startingLineNumber = "517"
+            endingLineNumber = "517"
             landmarkName = "main(argc, argv)"
             landmarkType = "9">
          </BreakpointContent>

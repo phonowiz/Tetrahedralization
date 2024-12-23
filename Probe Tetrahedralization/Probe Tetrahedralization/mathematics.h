@@ -30,6 +30,7 @@ struct sh9
     std::array<float, 9> sh  = {};
     
     float& operator[](int index) {return sh[index];}
+    bool operator==(sh9& rhs) const  { return rhs.sh == sh; }
 };
 
 struct sh9_color
@@ -38,6 +39,14 @@ struct sh9_color
     sh9 green =  {};
     sh9 blue = {};
     
+    bool operator==(const sh9_color& rhs)
+    {
+        return red == rhs.red && green == rhs.green && blue == rhs.blue;
+    }
+    bool operator!=(const sh9_color& rhs)
+    {
+        return !(red == rhs.red && green == rhs.green && blue == rhs.blue);
+    }
 };
 
 sh9 sh_scale(sh9 sh, float s)
