@@ -395,8 +395,6 @@ glm::vec3 random_ray(glm::vec3 n, glm::vec4 seed)
         
         return dir;
     }
-    
-    
 }
 
 struct light_info
