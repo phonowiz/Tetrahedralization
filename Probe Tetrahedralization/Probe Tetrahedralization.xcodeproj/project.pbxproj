@@ -10,7 +10,10 @@
 		B920D0492D02523D00814FC1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B920D0482D02523D00814FC1 /* main.cpp */; };
 		B920D0512D0264CF00814FC1 /* tetgen.cxx in Sources */ = {isa = PBXBuildFile; fileRef = B920D0502D0264CF00814FC1 /* tetgen.cxx */; };
 		B920D0542D0265C800814FC1 /* predicates.cxx in Sources */ = {isa = PBXBuildFile; fileRef = B920D0532D0265C800814FC1 /* predicates.cxx */; };
-		B9D97FC12D0F9AE9009DA310 /* helpers.h in Sources */ = {isa = PBXBuildFile; fileRef = B920D0562D02E95C00814FC1 /* helpers.h */; settings = {COMPILER_FLAGS = "-O0"; }; };
+		B95A02F02D24E11900549F71 /* shapes.h in Sources */ = {isa = PBXBuildFile; fileRef = B9B495032D0A325300F621A1 /* shapes.h */; };
+		B95A02FA2D24E8C700549F71 /* libalembic.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B95A02F82D24E8A700549F71 /* libalembic.a */; };
+		B95A02FB2D24E8C700549F71 /* libfbxsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B95A02F92D24E8A700549F71 /* libfbxsdk.a */; };
+		B9D97FC12D0F9AE9009DA310 /* helpers.h in Sources */ = {isa = PBXBuildFile; fileRef = B920D0562D02E95C00814FC1 /* helpers.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,6 +36,8 @@
 		B920D0532D0265C800814FC1 /* predicates.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = predicates.cxx; sourceTree = "<group>"; };
 		B920D0552D02E5F100814FC1 /* mathematics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mathematics.h; sourceTree = "<group>"; };
 		B920D0562D02E95C00814FC1 /* helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helpers.h; sourceTree = "<group>"; };
+		B95A02F82D24E8A700549F71 /* libalembic.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libalembic.a; path = "../../../../../../Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/release/libalembic.a"; sourceTree = "<group>"; };
+		B95A02F92D24E8A700549F71 /* libfbxsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfbxsdk.a; path = "../../../../../../Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/release/libfbxsdk.a"; sourceTree = "<group>"; };
 		B9B495032D0A325300F621A1 /* shapes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shapes.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -41,6 +46,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B95A02FA2D24E8C700549F71 /* libalembic.a in Frameworks */,
+				B95A02FB2D24E8C700549F71 /* libfbxsdk.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,6 +60,7 @@
 				B920D0522D0264E700814FC1 /* tetgen1.6.0 */,
 				B920D0472D02523D00814FC1 /* Probe Tetrahedralization */,
 				B920D0462D02523D00814FC1 /* Products */,
+				B95A02F12D24E2A400549F71 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -83,6 +91,15 @@
 				B920D04F2D0264CF00814FC1 /* tetgen.h */,
 			);
 			path = tetgen1.6.0;
+			sourceTree = "<group>";
+		};
+		B95A02F12D24E2A400549F71 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B95A02F82D24E8A700549F71 /* libalembic.a */,
+				B95A02F92D24E8A700549F71 /* libfbxsdk.a */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -142,6 +159,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B95A02F02D24E11900549F71 /* shapes.h in Sources */,
 				B9D97FC12D0F9AE9009DA310 /* helpers.h in Sources */,
 				B920D0512D0264CF00814FC1 /* tetgen.cxx in Sources */,
 				B920D0492D02523D00814FC1 /* main.cpp in Sources */,
@@ -158,7 +176,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -217,7 +235,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -274,8 +292,12 @@
 					"TETLIBRARY=1",
 					"$(inherited)",
 				);
+				HEADER_SEARCH_PATHS = "";
 				"HEADER_SEARCH_PATHS[arch=*]" = "";
+				LIBRARY_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/debug\"";
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SYSTEM_HEADER_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2020.3.7/include\"";
 				USER_HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Probe Tetrahedralization\"",
 					"\"$(SRCROOT)/tetgen1.6.0\"",
@@ -292,7 +314,11 @@
 				DEVELOPMENT_TEAM = 5662ABGNXL;
 				ENABLE_HARDENED_RUNTIME = YES;
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = "TETLIBRARY=1";
+				HEADER_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/release\"";
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SYSTEM_HEADER_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2020.3.7/include\"";
 				USER_HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Probe Tetrahedralization\"",
 					"\"$(SRCROOT)/tetgen1.6.0\"",

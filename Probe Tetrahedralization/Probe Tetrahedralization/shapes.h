@@ -13,6 +13,7 @@
 #include "mathematics.h"
 #include <numbers>
 #include <vector>
+#include <fbxsdk.h>
 
 
 glm::vec2 min2(glm::vec2 a, glm::vec2 b)
