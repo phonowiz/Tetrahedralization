@@ -118,10 +118,8 @@ void generate_probes(tetgenio& in, std::vector<probe_info>& probes )
         manager.probes[count].clear();
         count++;
     }
-
-
-    //Y IS UP!!!
     
+    //Y IS UP!!!
     for(float w = -total_width * .5f * .8f; w < total_width * .5f * .8f; w += steps)
     {
         for(float h = -total_height * .5f * .8f; h < total_height * .5f * .8f; h += steps)
@@ -196,6 +194,9 @@ void light_probes(std::vector<probe_info>& probes)
             
             sh9 sh_dir = sh_evaluate(results[i].dir);
             
+            glm::vec3 probe_color = results[i].color;
+            if(probe_color != glm::vec3(0.0f))
+                printf("lighting probe with color <%f, %f, %f>\n", probe_color.r, probe_color.g, probe_color.b);
             p.sh_color.red =  sh_add(p.sh_color.red, sh_scale(sh_dir, results[i].color.r));
             p.sh_color.green = sh_add(p.sh_color.green, sh_scale(sh_dir, results[i].color.g));
             p.sh_color.blue = sh_add(p.sh_color.blue, sh_scale(sh_dir, results[i].color.b));
@@ -214,9 +215,9 @@ void light_probes(std::vector<probe_info>& probes)
             assert(!std::isnan(p.sh_color.green[i]));
             assert(!std::isnan(p.sh_color.blue[i]));
         }
-        printf("\tcolor R: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.red[0], p.sh_color.red[1], p.sh_color.red[2], p.sh_color.red[3], p.sh_color.red[4], p.sh_color.red[5], p.sh_color.red[6], p.sh_color.red[7], p.sh_color.red[8]);
-        printf("\tcolor G: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.green[0], p.sh_color.green[1], p.sh_color.green[2], p.sh_color.green[3], p.sh_color.green[4], p.sh_color.green[5], p.sh_color.green[6], p.sh_color.green[7], p.sh_color.green[8]);
-        printf("\tcolor B: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.blue[0], p.sh_color.blue[1], p.sh_color.blue[2], p.sh_color.blue[3], p.sh_color.blue[4], p.sh_color.blue[5], p.sh_color.blue[6], p.sh_color.blue[7], p.sh_color.blue[8]);
+        //printf("\tcolor R: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.red[0], p.sh_color.red[1], p.sh_color.red[2], p.sh_color.red[3], p.sh_color.red[4], p.sh_color.red[5], p.sh_color.red[6], p.sh_color.red[7], p.sh_color.red[8]);
+        //printf("\tcolor G: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.green[0], p.sh_color.green[1], p.sh_color.green[2], p.sh_color.green[3], p.sh_color.green[4], p.sh_color.green[5], p.sh_color.green[6], p.sh_color.green[7], p.sh_color.green[8]);
+        //printf("\tcolor B: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.blue[0], p.sh_color.blue[1], p.sh_color.blue[2], p.sh_color.blue[3], p.sh_color.blue[4], p.sh_color.blue[5], p.sh_color.blue[6], p.sh_color.blue[7], p.sh_color.blue[8]);
     }
 }
 
@@ -225,7 +226,7 @@ int get_tetrahedra(glm::vec3 target_position, std::vector<tetrahedra>& tetrahedr
 {
     int tetra_index = 0;
 
-     while(true)
+    while(true)
     {
         glm::vec3 abc = tetrahedras[tetra_index].matrix * (target_position - probes[tetrahedras[tetra_index].probes[3]].position);
         float d = 1.0f - abc.x - abc.y - abc.z;
@@ -260,11 +261,6 @@ int find_origin_tetrahedra( std::vector<tetrahedra>& tetrahedras, std::vector<pr
 glm::vec4 cosine_lobe_sh = glm::vec4(0.8862f, -1.0233f, 1.0233f, -1.0233f);
 glm::vec4 sh_base = glm::vec4(0.2821f, -0.4886f, 0.4886f, -0.4886f);
 
-
-glm::vec3 light_color = glm::vec3(20.0f, 20.20f, 20.050f) * 5.f;
-glm::vec3 light_dir = glm::vec3(-1.f, -1.f, 1.000f);
-glm::vec3 light_pos = glm::vec3 (0.f, 8.2f, .0f);
-
 glm::vec4 sh_normal(glm::vec3 normal)
 {
     return glm::vec4(1.0, normal.x,normal.y, normal.z)  ;
@@ -292,8 +288,6 @@ glm::vec3 sh_probe_color(glm::vec4 shr, glm::vec4 shg, glm::vec4 shb, glm::vec3 
 
 glm::vec3 get_color(glm::vec3 dir, glm::vec3 world_pos, std::vector<tetrahedra>& tetras, std::vector<probe_info>& probes)
 {
-
-    //glm::vec4 coords = glm::vec4(0.0f);
     int tetra_index = get_tetrahedra(world_pos, tetras, probes);
     
     glm::vec4 shr = glm::vec4(0);
@@ -317,9 +311,8 @@ glm::vec3 get_color(glm::vec3 dir, glm::vec3 world_pos, std::vector<tetrahedra>&
                 probe_info &p = probes[ neighbors[i] ];
                 
                 glm::vec4 temp_shr = glm::vec4(p.sh_color.red[0], p.sh_color.red[1], p.sh_color.red[2], p.sh_color.red[3]);
-                glm::vec4 temp_shg = glm::vec4(p.sh_color.green[0], p.sh_color.green[1], p.sh_color.red[2], p.sh_color.green[3]);
+                glm::vec4 temp_shg = glm::vec4(p.sh_color.green[0], p.sh_color.green[1], p.sh_color.green[2], p.sh_color.green[3]);
                 glm::vec4 temp_shb = glm::vec4(p.sh_color.blue[0], p.sh_color.blue[1], p.sh_color.blue[2], p.sh_color.blue[3]);
-                
                 
                 shr += temp_shr * weight;
                 shg += temp_shg * weight;
@@ -327,9 +320,7 @@ glm::vec3 get_color(glm::vec3 dir, glm::vec3 world_pos, std::vector<tetrahedra>&
             }
         }
     }
-    
     return sh_probe_color(shr, shg, shb, -dir);
-   
 }
 
 void test_unprojection(std::vector<tetrahedra>& tetrahedras, std::vector<probe_info>& probes)
@@ -345,8 +336,6 @@ void test_unprojection(std::vector<tetrahedra>& tetrahedras, std::vector<probe_i
         float t = float((current_time - start_time)) / float(total_time);
         
         glm::vec3 ro = glm::vec3(8.f*sin(t) - .2f, 2.f + sin(t), -8.f*cos(t) + .2f);
-        
-        
         int j =0;
         for(probe_info& p : probes)
         {
@@ -358,11 +347,7 @@ void test_unprojection(std::vector<tetrahedra>& tetrahedras, std::vector<probe_i
             printf("color picked for probe [%d]: %.7f, %.7f, %.7f\n", j, color.r, color.g, color.b);
             ++j;
         }
-        
-        
     }
-    
-    
 }
 
 void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vector<tetrahedra>& tetrahedras)
@@ -460,7 +445,7 @@ void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vect
         printf("\t\tif(index == %i)\n", (i * 4) + 1);
         printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
         printf("\t\tif(index == %i)\n", (i * 4) + 2);
-        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
+        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.blue[0], probes[i].sh_color.blue[1], probes[i].sh_color.blue[2], probes[i].sh_color.blue[3]);
         printf("\t\tif(index == %i)\n", (i * 4) + 3);
         printf("\t\t\tfragColor = vec4(%f, %f, %f, 0.0f);\n", probes[i].position[0], probes[i].position[1], probes[i].position[2]);
     }
@@ -470,7 +455,6 @@ void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vect
     for( int i = 0; i < out.numberoftetrahedra; ++i)
     {
         printf("\t\tif(index == %i)\n", (i * 2) + 0 + (int)probes.size() * 4);
-        //printf("\t\tif(index == %i)", i);
         printf("\t\t\tfragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].probes[0], tetrahedras[i].probes[1], tetrahedras[i].probes[2], tetrahedras[i].probes[3]);
         printf("\t\tif(index == %i)\n", (i * 2) + 1 + (int)probes.size() * 4);
         printf("\t\t\tfragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].neighbors[0], tetrahedras[i].neighbors[1], tetrahedras[i].neighbors[2], tetrahedras[i].neighbors[3]);
@@ -484,16 +468,9 @@ void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vect
     {
         static sh9_color zero;
         int tetra_index = get_tetrahedra(probes[i].position, tetrahedras, probes);
-        if(probes[i].sh_color != zero)
-        {
-            
-            std::cout << "\t\td += drawPoint(ro, rd, vec3(" << probes[i].position.x << "," << probes[i].position.y << "," << probes[i].position.z << "), " << i << "," << tetra_index << ");" << std::endl;
-        }
-        else
-            std::cout << "//\t\td += drawPoint(ro, rd, vec3(" << probes[i].position.x << "," << probes[i].position.y << "," << probes[i].position.z << "), " << i << "," << tetra_index << ");" << std::endl;
+        std::cout << "\t\td += drawPoint(ro, rd, vec3(" << probes[i].position.x << "," << probes[i].position.y << "," << probes[i].position.z << "), " << i << "," << tetra_index << ");" << std::endl;
     }
 }
-
 
 int main(int argc, const char * argv[]) {
     
@@ -512,7 +489,7 @@ int main(int argc, const char * argv[]) {
     tetrahedralize("nV", &in, &out);
 
     write_probe_array(probes, out, tetrahedras);
-    test_unprojection(tetrahedras, probes);
+    //test_unprojection(tetrahedras, probes);
     // Output mesh to files 'barout.node', 'barout.ele' and 'barout.face'.
     out.save_nodes("barout");
     out.save_elements("barout");

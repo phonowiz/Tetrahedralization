@@ -399,21 +399,6 @@ glm::vec3 random_ray(glm::vec3 n, glm::vec4 seed)
     
 }
 
-glm::vec3 do_material( glm::vec3 pos, float /*iTime*/ )
-{
-    float k = do_model(pos, 0.0f).y;
-    
-    glm::vec3 c = glm::vec3(0.0);
-    
-    c = glm::mix(c, glm::vec3(.0f,1.0f,.20f), float(k == 1.0f));
-    c = glm::mix(c, glm::vec3(1.0f,0.2f,.1f), float(k == 2.0f));
-    c = glm::mix(c, glm::vec3(0.4f,0.3f,1.0f), float(k == 3.0f));
-    c = glm::mix(c, glm::vec3(1.f,1.f,1.f), float(k == 4.0f));
-    c = glm::mix(c, glm::vec3(0.4f,.0f,0.1f), float(k == 5.0f));
-    
-    return c;//glm::vec(c,0.0);
-}
-
 struct light_info
 {
     glm::vec3 position;
@@ -424,7 +409,6 @@ struct light_info
 //based off of https://www.shadertoy.com/view/4fyfWR
 glm::vec3 pathtrace(glm::vec3 ro, glm::vec3 rd, bool& collision, float& t)
 {
-    //glm::vec3 atten = glm::vec3(1.0f, 1.0f, 1.0f);
     collision = false;
     t = precis * 2.0f;
 
@@ -434,31 +418,9 @@ glm::vec3 pathtrace(glm::vec3 ro, glm::vec3 rd, bool& collision, float& t)
         float h = do_model(ro + rd * t, 0.0f).x;
         if(( glm::abs(h) < precis))
         {
-            //t = 0;
-            //ro = ro + rd * t;
-            //rd = light.position - ro;
-            //rd = glm::normalize(rd);
-            
             result =  do_material(ro + rd * t, 0.0f);
             collision = true;
             break;
-            
-//            bool can_see_light = false;
-//            while( glm::abs(t) < max_distance)
-//            {
-//                glm::vec3 c = ro + rd * t;
-//                glm::vec3 l = light.position - c;
-//
-//                color_gathered *= do_material(c, 0.0f);
-//                if( glm::length(l) <  precis * 2.0f)
-//                {
-//                    result = atte
-//                    can_see_light = false;
-//                    break;
-//                }
-//            }
-//        }
-//        else
         }
         t += precis;
     }
@@ -477,12 +439,12 @@ static void poor_man_pathtracer(glm::vec3 ro, glm::vec3 rd, tracing_result* resu
 {
     const int BOUNCE_TOTAL = 2;
     
-    glm::vec3 color = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 color = glm::vec3(0.0f);
     light_info light =  {};
     
     //these must match the shader..
     light.position = glm::vec3(0.f, 8.2f, .0f);
-    light.color = glm::vec3(20.0, 20.20, 20.050) * 5.0f;
+    light.color = glm::vec3(.500f, .50f, .500f);
     
     glm::vec3 to_light_dir = glm::vec3(0.0f);
     glm::vec3 surface_normal = glm::vec3(0.0f);
@@ -492,7 +454,7 @@ static void poor_man_pathtracer(glm::vec3 ro, glm::vec3 rd, tracing_result* resu
     {
         bool collision = false;
         glm::vec3 surface_color = pathtrace(ro, rd, collision, t);
-        glm::vec3 light_color = {};
+        glm::vec3 light_color = glm::vec3(0.0f);
         glm::vec3 c = ro + rd * t;
         if(collision)
         {
@@ -500,14 +462,14 @@ static void poor_man_pathtracer(glm::vec3 ro, glm::vec3 rd, tracing_result* resu
             to_light_dir = glm::normalize(to_light_dir);
             surface_normal = calc_normal(c, 0.0f);
             
-            float to_light_t = precis * 2.0f;
+            float to_light_t = precis;
 
             while( glm::abs(to_light_t) < max_distance)
             {
                 glm::vec3 test = c + to_light_dir * to_light_t;
                 glm::vec3 l = light.position - test;
                 
-                if( glm::length(l) <  precis * 2.0f)
+                if( glm::length(l) <  precis)
                 {
                     light_color = light.color;
                     break;
@@ -529,7 +491,6 @@ static void poor_man_pathtracer(glm::vec3 ro, glm::vec3 rd, tracing_result* resu
         rd = random_ray(normal, glm::vec4(ro, float(i)));
     }
     
-    //T& r = *results;
     results[index].color = color;
     results[index].dir = rd;
 }

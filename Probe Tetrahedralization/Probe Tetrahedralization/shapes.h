@@ -52,13 +52,13 @@ float sdBox( glm::vec3 p, glm::vec3 b )
          glm::length(glm::max(d,0.0f));
 }
 
-glm::vec2 plane( glm::vec3 p) {
-    return glm::vec2(p.y+1.0,4.0);
+glm::vec2 plane( glm::vec3 p, float color_index) {
+    return glm::vec2(p.y+1.0,color_index);
 }
 
 glm::vec2 do_model( glm::vec3 p, float /*itime*/ ) {
     
-    glm::vec2 d = plane(p);
+    glm::vec2 d = plane(p, 4.0f);
 
     glm::vec2 q = glm::vec2(sdSphere(p - glm::vec3(0.0f,0.0f,-0.8f), 1.0f),1.0f);
     q = max2(q, glm::vec2(-sdCylinder(p - glm::vec3(0.0f,0.0f,-0.8f), 0.5f),2.0f));
@@ -78,6 +78,20 @@ glm::vec2 do_model( glm::vec3 p, float /*itime*/ ) {
     return d;
 }
 
+glm::vec3 do_material( glm::vec3 pos, float /*iTime*/ )
+{
+    float k = do_model(pos, 0.0f).y;
+    
+    glm::vec3 c = glm::vec3(0.0);
+    
+    c = glm::mix(c, glm::vec3(.0f,1.0f,.20f), float(k == 1.0f));
+    c = glm::mix(c, glm::vec3(1.0f,0.2f,.1f), float(k == 2.0f));
+    c = glm::mix(c, glm::vec3(0.4f,0.3f,1.0f), float(k == 3.0f));
+    c = glm::mix(c, glm::vec3(1.f,1.f,1.f), float(k == 4.0f));
+    c = glm::mix(c, glm::vec3(0.4f,.0f,0.1f), float(k == 5.0f));
+    
+    return c;//glm::vec(c,0.0);
+}
 
 glm::vec3 calc_normal( glm::vec3 p, float /*iTime*/ )
 {
