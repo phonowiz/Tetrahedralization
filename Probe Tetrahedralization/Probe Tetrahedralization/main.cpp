@@ -466,7 +466,7 @@ void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vect
     
     for(int i = 0; i < probes.size(); ++i)
     {
-        static sh9_color zero;
+        //static sh9_color zero;
         int tetra_index = get_tetrahedra(probes[i].position, tetrahedras, probes);
         std::cout << "\t\td += drawPoint(ro, rd, vec3(" << probes[i].position.x << "," << probes[i].position.y << "," << probes[i].position.z << "), " << i << "," << tetra_index << ");" << std::endl;
     }
@@ -474,6 +474,10 @@ void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vect
 
 int main(int argc, const char * argv[]) {
     
+    
+    asset_vertex_info vertex_info = {};
+    glm::mat4 world_mat = glm::mat4(1.0f);
+    get_glb_vertex_info("assets/cornell_box/cornell_box-_original.glb", vertex_info, world_mat);
     
     std::vector<probe_info> probes;
     std::vector<tetrahedra> tetrahedras;

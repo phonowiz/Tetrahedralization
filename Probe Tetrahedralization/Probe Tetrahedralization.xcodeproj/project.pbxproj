@@ -11,8 +11,8 @@
 		B920D0512D0264CF00814FC1 /* tetgen.cxx in Sources */ = {isa = PBXBuildFile; fileRef = B920D0502D0264CF00814FC1 /* tetgen.cxx */; };
 		B920D0542D0265C800814FC1 /* predicates.cxx in Sources */ = {isa = PBXBuildFile; fileRef = B920D0532D0265C800814FC1 /* predicates.cxx */; };
 		B95A02F02D24E11900549F71 /* shapes.h in Sources */ = {isa = PBXBuildFile; fileRef = B9B495032D0A325300F621A1 /* shapes.h */; };
-		B95A02FA2D24E8C700549F71 /* libalembic.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B95A02F82D24E8A700549F71 /* libalembic.a */; };
-		B95A02FB2D24E8C700549F71 /* libfbxsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B95A02F92D24E8A700549F71 /* libfbxsdk.a */; };
+		B95FAEF02D25C99E00CC944E /* tiny_gltf.cc in Sources */ = {isa = PBXBuildFile; fileRef = B95FAEEF2D25C99E00CC944E /* tiny_gltf.cc */; };
+		B95FAEF22D25CD2C00CC944E /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B95FAEF12D25CD1300CC944E /* assets */; };
 		B9D97FC12D0F9AE9009DA310 /* helpers.h in Sources */ = {isa = PBXBuildFile; fileRef = B920D0562D02E95C00814FC1 /* helpers.h */; };
 /* End PBXBuildFile section */
 
@@ -23,6 +23,7 @@
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
+				B95FAEF22D25CD2C00CC944E /* assets in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
@@ -38,6 +39,9 @@
 		B920D0562D02E95C00814FC1 /* helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helpers.h; sourceTree = "<group>"; };
 		B95A02F82D24E8A700549F71 /* libalembic.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libalembic.a; path = "../../../../../../Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/release/libalembic.a"; sourceTree = "<group>"; };
 		B95A02F92D24E8A700549F71 /* libfbxsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfbxsdk.a; path = "../../../../../../Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/release/libfbxsdk.a"; sourceTree = "<group>"; };
+		B95FAEEE2D25C96000CC944E /* tiny_gltf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tiny_gltf.h; sourceTree = "<group>"; };
+		B95FAEEF2D25C99E00CC944E /* tiny_gltf.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_gltf.cc; sourceTree = "<group>"; };
+		B95FAEF12D25CD1300CC944E /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B9B495032D0A325300F621A1 /* shapes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shapes.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -46,8 +50,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B95A02FA2D24E8C700549F71 /* libalembic.a in Frameworks */,
-				B95A02FB2D24E8C700549F71 /* libfbxsdk.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,6 +59,8 @@
 		B920D03C2D02523D00814FC1 = {
 			isa = PBXGroup;
 			children = (
+				B95FAEF12D25CD1300CC944E /* assets */,
+				B95FAEEC2D25C93700CC944E /* tiny_gltf */,
 				B920D0522D0264E700814FC1 /* tetgen1.6.0 */,
 				B920D0472D02523D00814FC1 /* Probe Tetrahedralization */,
 				B920D0462D02523D00814FC1 /* Products */,
@@ -100,6 +104,15 @@
 				B95A02F92D24E8A700549F71 /* libfbxsdk.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B95FAEEC2D25C93700CC944E /* tiny_gltf */ = {
+			isa = PBXGroup;
+			children = (
+				B95FAEEF2D25C99E00CC944E /* tiny_gltf.cc */,
+				B95FAEEE2D25C96000CC944E /* tiny_gltf.h */,
+			);
+			path = tiny_gltf;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -163,6 +176,7 @@
 				B9D97FC12D0F9AE9009DA310 /* helpers.h in Sources */,
 				B920D0512D0264CF00814FC1 /* tetgen.cxx in Sources */,
 				B920D0492D02523D00814FC1 /* main.cpp in Sources */,
+				B95FAEF02D25C99E00CC944E /* tiny_gltf.cc in Sources */,
 				B920D0542D0265C800814FC1 /* predicates.cxx in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -289,15 +303,19 @@
 				DEVELOPMENT_TEAM = 5662ABGNXL;
 				ENABLE_HARDENED_RUNTIME = YES;
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = (
-					"TETLIBRARY=1",
+					"DEBUG=1",
 					"$(inherited)",
+					"TETLIBRARY=1",
 				);
 				HEADER_SEARCH_PATHS = "";
 				"HEADER_SEARCH_PATHS[arch=*]" = "";
 				LIBRARY_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/debug\"";
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SYSTEM_HEADER_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2020.3.7/include\"";
+				SYSTEM_HEADER_SEARCH_PATHS = (
+					"\"/Applications/Autodesk/FBX SDK/2020.3.7/include\"",
+					"\"$(SRCROOT)/tinygltf\"",
+				);
 				USER_HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Probe Tetrahedralization\"",
 					"\"$(SRCROOT)/tetgen1.6.0\"",
@@ -318,7 +336,10 @@
 				LIBRARY_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/release\"";
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SYSTEM_HEADER_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2020.3.7/include\"";
+				SYSTEM_HEADER_SEARCH_PATHS = (
+					"\"/Applications/Autodesk/FBX SDK/2020.3.7/include\"",
+					"\"$(SRCROOT)/tinygltf\"",
+				);
 				USER_HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Probe Tetrahedralization\"",
 					"\"$(SRCROOT)/tetgen1.6.0\"",
