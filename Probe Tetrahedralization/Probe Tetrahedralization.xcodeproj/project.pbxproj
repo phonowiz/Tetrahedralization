@@ -37,8 +37,6 @@
 		B920D0532D0265C800814FC1 /* predicates.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = predicates.cxx; sourceTree = "<group>"; };
 		B920D0552D02E5F100814FC1 /* mathematics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mathematics.h; sourceTree = "<group>"; };
 		B920D0562D02E95C00814FC1 /* helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helpers.h; sourceTree = "<group>"; };
-		B95A02F82D24E8A700549F71 /* libalembic.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libalembic.a; path = "../../../../../../Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/release/libalembic.a"; sourceTree = "<group>"; };
-		B95A02F92D24E8A700549F71 /* libfbxsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfbxsdk.a; path = "../../../../../../Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/release/libfbxsdk.a"; sourceTree = "<group>"; };
 		B95FAEEE2D25C96000CC944E /* tiny_gltf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tiny_gltf.h; sourceTree = "<group>"; };
 		B95FAEEF2D25C99E00CC944E /* tiny_gltf.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_gltf.cc; sourceTree = "<group>"; };
 		B95FAEF12D25CD1300CC944E /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
@@ -100,8 +98,6 @@
 		B95A02F12D24E2A400549F71 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				B95A02F82D24E8A700549F71 /* libalembic.a */,
-				B95A02F92D24E8A700549F71 /* libfbxsdk.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -306,6 +302,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 					"TETLIBRARY=1",
+					GLM_ENABLE_EXPERIMENTAL,
 				);
 				HEADER_SEARCH_PATHS = "";
 				"HEADER_SEARCH_PATHS[arch=*]" = "";
@@ -331,7 +328,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5662ABGNXL;
 				ENABLE_HARDENED_RUNTIME = YES;
-				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = "TETLIBRARY=1";
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = (
+					"TETLIBRARY=1",
+					GLM_ENABLE_EXPERIMENTAL,
+				);
 				HEADER_SEARCH_PATHS = "";
 				LIBRARY_SEARCH_PATHS = "\"/Applications/Autodesk/FBX SDK/2020.3.7/lib/clang/release\"";
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
