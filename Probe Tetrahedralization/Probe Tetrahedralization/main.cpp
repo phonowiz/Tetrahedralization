@@ -213,128 +213,21 @@ void test_unprojection(std::vector<tetrahedra>& tetrahedras, std::vector<probe_i
 
 void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vector<tetrahedra>& tetrahedras)
 {
-//    assert(out.firstnumber == 0 && "this will not work unless first number is zero");
-//    assert(out.numberofcorners == 4);
-//    for(int i = 0; i < out.numberoftetrahedra; ++i)
-//    {
-//        tetrahedras.push_back(tetrahedra());
-//        tetrahedras[i].neighbors[0] = out.neighborlist[i * 4 + 0];
-//        tetrahedras[i].neighbors[1] = out.neighborlist[i * 4 + 1];
-//        tetrahedras[i].neighbors[2] = out.neighborlist[i * 4 + 2];
-//        tetrahedras[i].neighbors[3] = out.neighborlist[i * 4 + 3];
-//
-//        for(int j = 0; j < out.numberofcorners; ++j)
-//            tetrahedras[i].probes[j] = out.tetrahedronlist[i * out.numberofcorners + j];
-//
-//        glm::vec3 column0 = probes[tetrahedras[i].probes[0]].position - probes[tetrahedras[i].probes[3]].position;
-//        glm::vec3 column1 = probes[tetrahedras[i].probes[1]].position - probes[tetrahedras[i].probes[3]].position;
-//        glm::vec3 column2 = probes[tetrahedras[i].probes[2]].position - probes[tetrahedras[i].probes[3]].position;
-//
-//        glm::mat3 mat(column0, column1, column2);
-//
-//        tetrahedras[i].matrix = glm::inverse(mat);
-//    }
-//
-//    int origin_tetra = find_origin_tetrahedra(tetrahedras, probes);
-//
-//    printf("Common ======================================\n"
-//
-//           "float packfragcoord2 (vec2 p, vec2 s) {\n"
-//               "\treturn floor(p.y) * s.x + p.x;\n"
-//           "}\n"
-//           "vec2 unpackfragcoord2 (float p, vec2 s) {\n"
-//               "\tfloat x = mod(p, s.x);\n"
-//               "\tfloat y = (p - x) / s.x + 0.5;\n"
-//               "\treturn vec2(x,y);\n"
-//           "}\n"
-//           "ivec2 unpackfragcoord2 (int p, ivec2 s) {\n"
-//               "\tint x = p %% s.x;\n"
-//               "\tint y = (p - x) / s.x;\n"
-//               "\treturn ivec2(x,y);\n"
-//           "}\n"
-//           "float packfragcoord3 (vec3 p, vec3 s) {\n"
-//               "\treturn floor(p.z) * s.x * s.y + floor(p.y) * s.x + p.x;\n"
-//           "}\n"
-//           "int packfragcoord3 (ivec3 p, ivec3 s) {\n"
-//               "\treturn p.z * s.x * s.y + p.y * s.x + p.x;\n"
-//           "}\n"
-//           "vec3 unpackfragcoord3 (float p, vec3 s) {\n"
-//               "\tfloat x = mod(p, s.x);\n"
-//               "\tfloat y = mod((p - x) / s.x, s.y);\n"
-//               "\tfloat z = (p - x - floor(y) * s.x) / (s.x * s.y);\n"
-//               "\treturn vec3(x,y+0.5,z+0.5);\n"
-//           "}\n"
-//
-//           "struct tetrahedra\n"
-//           "{\n"
-//                "\tivec4   probes;\n"
-//                "\tivec4   neighbors;\n"
-//                "\tmat3    matrix;\n"
-//           "};\n"
-//
-//           "const int origin_tetra = %d;\n"
-//           "struct probe\n"
-//           "{\n"
-//               "\tvec4 shr;\n"
-//               "\tvec4 shg;\n"
-//               "\tvec4 shb;\n"
-//               "\tvec3 position;\n"
-//           "};\n"
-//           "const uint total_tetras = %d;\n"
-//           "const uint total_probes = %d;\n"
-//           ,
-//           origin_tetra,
-//           (uint)(tetrahedras.size()),
-//           (uint)probes.size()
-//           );
-    
-    
-    printf("First Pass==================================\n");
-    
-//    printf("#define vec4 float4\n");
-//    printf("#define vec3 float3\n");
-//    printf("#define vec2 float2\n");
-//
-//    printf("\tint index = int(packfragcoord2(fragCoord.xy, iResolution.xy));\n");
-//    printf("\tif(index <  total_probes * 4){\n");
-
-    
+    printf("==================================\n");
     for(int i = 0; i < probes.size(); ++i)
     {
-//        printf("\t\tif(index == %i)\n", (i * 4) + 0);
-//        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
-//        printf("\t\tif(index == %i)\n", (i * 4) + 1);
-//        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
-//        printf("\t\tif(index == %i)\n", (i * 4) + 2);
-//        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.blue[0], probes[i].sh_color.blue[1], probes[i].sh_color.blue[2], probes[i].sh_color.blue[3]);
-//        printf("\t\tif(index == %i)\n", (i * 4) + 3);
-        //printf("\t\t\tfragColor = vec4(%f, %f, %f, 0.0f);\n", probes[i].position[0], probes[i].position[1], probes[i].position[2]);
-        
-        printf("\tsphere%i = BABYLON.MeshBuilder.CreateSphere(\"sphere%i\", {diameter: .15, segments: 5}, scene);", i,i);
-        printf("\tsphere%i.position.x= %f, sphere%i.position.y = %f, sphere%i.position.z = %f\n",
+        printf("\tsphere%i = BABYLON.MeshBuilder.CreateSphere(\"sphere%i\", {diameter: .03, segments: 5}, scene);\n", i,i);
+        printf("\tsphere%i.position.x= %f, sphere%i.position.y = %f, sphere%i.position.z = %f;\n",
                i, probes[i].position[0], i, probes[i].position[1], i, probes[i].position[2]);
+        
+        printf("\tsphere%i.material = simpleMat.clone(\"sphere%i\");\n", i,i);
+        printf("\tsphere%i.material.setArray4(\"shColorR\", new Float32Array([%f, %f, %f, %f]));\n", i, probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
+        printf("\tsphere%i.material.setArray4(\"shColorG\", new Float32Array([%f, %f, %f, %f]));\n", i, probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
+        printf("\tsphere%i.material.setArray4(\"shColorB\", new Float32Array([%f, %f, %f, %f]));\n", i, probes[i].sh_color.blue[0], probes[i].sh_color.blue[1], probes[i].sh_color.blue[2], probes[i].sh_color.blue[3]);
     }
-    //printf("\t}\n");
     
-//    printf("\telse{\n");
-//    for( int i = 0; i < out.numberoftetrahedra; ++i)
-//    {
-//        printf("\t\tif(index == %i)\n", (i * 2) + 0 + (int)probes.size() * 4);
-//        printf("\t\t\tfragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].probes[0], tetrahedras[i].probes[1], tetrahedras[i].probes[2], tetrahedras[i].probes[3]);
-//        printf("\t\tif(index == %i)\n", (i * 2) + 1 + (int)probes.size() * 4);
-//        printf("\t\t\tfragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].neighbors[0], tetrahedras[i].neighbors[1], tetrahedras[i].neighbors[2], tetrahedras[i].neighbors[3]);
-//    }
-    
-//    printf("\t}\n\n");
-    
-    printf("===========================================\n\n");
-    
-    for(int i = 0; i < probes.size(); ++i)
-    {
-        //static sh9_color zero;
-        int tetra_index = get_tetrahedra(probes[i].position, tetrahedras, probes);
-        std::cout << "\t\td += drawPoint(ro, rd, vec3(" << probes[i].position.x << "," << probes[i].position.y << "," << probes[i].position.z << "), " << i << "," << tetra_index << ");" << std::endl;
-    }
+    printf("==================================\n");
+
 }
 
 int main(int argc, const char * argv[]) {
@@ -348,13 +241,6 @@ int main(int argc, const char * argv[]) {
     std::vector<tetrahedra> tetrahedras;
     tetgenio in, out;
     generate_probes(in, probes, vertex_info);
-    
-//    for(int i = 0; i < probes.size(); ++i)
-//    {
-//        printf("\tsphere%i = BABYLON.MeshBuilder.CreateSphere(\"sphere%i\", {diameter: .03, segments: 5}, scene);\n", i,i);
-//        printf("\tsphere%i.position.x= %f, sphere%i.position.y = %f, sphere%i.position.z = %f;\n",
-//               i, probes[i].position[0], i, probes[i].position[1], i, probes[i].position[2]);
-//    }
     
     light_probes(probes, vertex_info);
     
