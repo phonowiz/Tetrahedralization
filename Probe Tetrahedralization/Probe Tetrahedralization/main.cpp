@@ -53,18 +53,15 @@ void light_probes(std::vector<probe_info>& probes, const asset_vertex_info& vert
         {
             futures[i].wait();
             
-            sh9 sh_dir = sh_evaluate(results[i].dir);
+            sh9 sh_dir = sh_evaluate(p.normal);
             
-//            glm::vec3 probe_color = results[i].color;
-//            if(probe_color != glm::vec3(0.0f))
-//                printf("lighting probe with color <%f, %f, %f>\n", probe_color.r, probe_color.g, probe_color.b);
             p.sh_color.red =  sh_add(p.sh_color.red, sh_scale(sh_dir, results[i].color.r));
             p.sh_color.green = sh_add(p.sh_color.green, sh_scale(sh_dir, results[i].color.g));
             p.sh_color.blue = sh_add(p.sh_color.blue, sh_scale(sh_dir, results[i].color.b));
             
             
         }
-        const float sh_factor = (4.0f * M_PI) / samples;
+        const float sh_factor = (2.0f * M_PI) / samples;
         
         p.sh_color.red = sh_scale(p.sh_color.red, sh_factor);
         p.sh_color.green = sh_scale(p.sh_color.green, sh_factor);
@@ -200,9 +197,7 @@ void test_unprojection(std::vector<tetrahedra>& tetrahedras, std::vector<probe_i
         int j =0;
         for(probe_info& p : probes)
         {
-            glm::vec3 rd = p.normal;//calc_normal(p.position, 0.0);
-            //glm::vec3 rd = glm::normalize(ro - p.position);
-            
+            glm::vec3 rd = p.normal;
             glm::vec3 color = get_color(rd, p.position, tetrahedras, probes);
             
             printf("color picked for probe [%d]: %.7f, %.7f, %.7f\n", j, color.r, color.g, color.b);
@@ -213,14 +208,51 @@ void test_unprojection(std::vector<tetrahedra>& tetrahedras, std::vector<probe_i
 
 void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vector<tetrahedra>& tetrahedras)
 {
-    printf("==================================\n");
+    
+//    printf("Baked Data========================\n");
+////    printf("#define vec4 float4\n");
+////    printf("#define vec3 float3\n");
+////    printf("#define vec2 float2\n");
+//
+//    printf("\tint index = int(packfragcoord2(fragCoord.xy, iResolution.xy));\n");
+//    printf("\tif(index <  total_probes * 4){\n");
+//
+//    for(int i = 0; i < probes.size(); ++i)
+//    {
+//        printf("\t\tif(index == %i)\n", (i * 4) + 0);
+//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
+//        printf("\t\tif(index == %i)\n", (i * 4) + 1);
+//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
+//        printf("\t\tif(index == %i)\n", (i * 4) + 2);
+//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
+//        printf("\t\tif(index == %i)\n", (i * 4) + 3);
+//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, 0.0f);\n", probes[i].position[0], probes[i].position[1], probes[i].position[2]);
+//    }
+//    printf("\t}\n");
+//
+//    printf("\telse{\n");
+//    for( int i = 0; i < out.numberoftetrahedra; ++i)
+//    {
+//        printf("\t\tif(index == %i)\n", (i * 2) + 0 + (int)probes.size() * 4);
+//        //printf("\t\tif(index == %i)", i);
+//        printf("\t\t\tgl_FragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].probes[0], tetrahedras[i].probes[1], tetrahedras[i].probes[2], tetrahedras[i].probes[3]);
+//        printf("\t\tif(index == %i)\n", (i * 2) + 1 + (int)probes.size() * 4);
+//        printf("\t\t\tgl_FragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].neighbors[0], tetrahedras[i].neighbors[1], tetrahedras[i].neighbors[2], tetrahedras[i].neighbors[3]);
+//    }
+//
+//    printf("\t}\n\n");
+    
+    printf("Second Pass==================================\n");
+    printf("var diameter = 0.08;\n");
     for(int i = 0; i < probes.size(); ++i)
     {
-        printf("\tsphere%i = BABYLON.MeshBuilder.CreateSphere(\"sphere%i\", {diameter: .03, segments: 5}, scene);\n", i,i);
+        printf("\tsphere%i = BABYLON.MeshBuilder.CreateSphere(\"sphere%i\", {diameter: diameter, segments: 5}, scene);\n", i,i);
         printf("\tsphere%i.position.x= %f, sphere%i.position.y = %f, sphere%i.position.z = %f;\n",
                i, probes[i].position[0], i, probes[i].position[1], i, probes[i].position[2]);
         
         printf("\tsphere%i.material = simpleMat.clone(\"sphere%i\");\n", i,i);
+        printf("\tsphere%i.material.setArray3(\"probePosition\", sphere%i.position);\n",i,i);
+        printf("\tsphere%i.material.setArray3(\"probeNormal\", new Float32Array([%f, %f, %f]));\n",i, probes[i].normal.x, probes[i].normal.y, probes[i].normal.z);
         printf("\tsphere%i.material.setArray4(\"shColorR\", new Float32Array([%f, %f, %f, %f]));\n", i, probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
         printf("\tsphere%i.material.setArray4(\"shColorG\", new Float32Array([%f, %f, %f, %f]));\n", i, probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
         printf("\tsphere%i.material.setArray4(\"shColorB\", new Float32Array([%f, %f, %f, %f]));\n", i, probes[i].sh_color.blue[0], probes[i].sh_color.blue[1], probes[i].sh_color.blue[2], probes[i].sh_color.blue[3]);

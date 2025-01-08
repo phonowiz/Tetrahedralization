@@ -173,17 +173,20 @@ public:
             
             if(glm::intersectRayTriangle(ro, rd, p0, p1, p2, bary_pos, distance))
             {
+//                if(distance > 1.0f || 0.0f < distance)
+//                    continue;
                 probe_info probe = {};
                 glm::vec3 full_bary = glm::vec3(bary_pos, glm::max(1.0f - bary_pos.x - bary_pos.y, 0.0f));
                 assert(bary_pos.x + bary_pos.y <= (1.0f + precis));
                 //printf("\tinterpolating between\n\t<%f, %f, %f>\n\t<%f, %f, %f>\n\t<%f %f %f>\n", p0.x, p0.y,p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
                 probe.position = p0 * full_bary.x + p1 * full_bary.y + p2 * full_bary.z;
                 
-                glm::vec3 n0 = info.positions[tri[ 0]];
-                glm::vec3 n1 = info.positions[tri[1]];
-                glm::vec3 n2 = info.positions[tri[2]];
+                glm::vec3 n0 = info.normals[tri[0]];
+                glm::vec3 n1 = info.normals[tri[1]];
+                glm::vec3 n2 = info.normals[tri[2]];
                 probe.normal = n0 * full_bary.x + n1 * full_bary.y + n2 * full_bary.z;
                 probe.normal = glm::normalize(probe.normal);
+
                 //printf("\thit found at %f, %f, %f at distance: %f\n", probe.position[0],probe.position[1],probe.position[2], distance);
                 
                 pr.push_back(probe);
@@ -340,6 +343,7 @@ struct pathtrace_result
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 normal = glm::vec3(0.0f);
     glm::vec3 color = glm::vec3(0.0f);
+    float distance = 0.0f;
 };
 
 
@@ -376,7 +380,7 @@ pathtrace_result pathtrace_tri(glm::vec3 ro, glm::vec3 rd, bool& collision, cons
             result.normal = n0 * full_bary.x + n1 * full_bary.y + n2 * full_bary.z;
             result.normal = glm::normalize(result.normal);
             result.color = col0 * full_bary.x + col1 * full_bary.y + col2 * full_bary.z;
-            
+            result.distance = distance;
             break;
         }
     }
@@ -454,7 +458,7 @@ struct pathtracer_info
 
 static void poor_man_pathtracer_tri(glm::vec3 ro, glm::vec3 rd, tracing_result* results, const asset_vertex_info& vert_info, int index)
 {
-    const int BOUNCE_TOTAL = 2;
+    const int BOUNCE_TOTAL = 1;
     
     glm::vec3 color = glm::vec3(0.0f);
     light_info light =  {};
@@ -463,59 +467,34 @@ static void poor_man_pathtracer_tri(glm::vec3 ro, glm::vec3 rd, tracing_result* 
     //these must match the shader..
     light.position = glm::vec3(0.f, 1.8f, .0f);
     light.color = glm::vec3(.500f, .50f, .500f);
-    //const float max_trace = 20.0f;
+
     
     glm::vec3 to_light_dir = glm::vec3(0.0f);
-    //glm::vec3 surface_normal = glm::vec3(0.0f);
     
-    //float t = 0.0f;
     for(int i = 0; i < BOUNCE_TOTAL; ++i)
     {
         bool collision = false;
-        //rd = glm::normalize(rd) * max_trace;
         
         pathtrace_result result = pathtrace_tri(ro, rd, collision, vert_info);
         glm::vec3 light_color = glm::vec3(0.0f);
-        //glm::vec3 c = result.position;//ro + rd * t;
         if(collision)
         {
             to_light_dir = light.position - result.position;
-            //to_light_dir = glm::normalize(to_light_dir);
-            //surface_normal = result.normal;//calc_normal(c, 0.0f);
-            
-            //bfloat to_light_t = precis;
 
-            //while( glm::abs(to_light_t) < max_distance)
+            collision = false;
+            glm::vec3 dir = glm::normalize(to_light_dir) * 0.01f;
+            pathtrace_result light_result = pathtrace_tri(result.position + dir, to_light_dir - dir, collision, vert_info);
+            if(!collision || (light_result.distance >= 1.0f || light_result.distance <= 0.0f))
             {
-                //glm::vec3 test = r + to_light_dir * to_light_t;
-                //glm::vec3 l = light.position - test;
-                
-//                if( glm::length(l) <  precis)
-//                {
-//                    light_color = light.color;
-//                    break;
-//                }
-                
-//                float h = do_model(test, 0.0f).x;
-//                bool occluded = (glm::abs(h) < precis);
-                
-                collision = false;
-                pathtrace_tri(result.position, to_light_dir, collision, vert_info);
-                if(collision)
-                {
-                    light_color = light.color;
-                }
-                    
-                //to_light_t += precis;
+                light_color = light.color;
             }
         }
         
         color += (result.color * light_color) * glm::max(0.0f, glm::dot(to_light_dir, result.normal));
 
-        ro = result.position;//ro + rd * t;
-        
-        //glm::vec3 normal = calc_normal(ro, 0.0f);
         rd = random_ray(result.normal, glm::vec4(ro, float(i)));
+        ro = result.position + rd * .01f;
+
     }
     
     results[index].color = color;

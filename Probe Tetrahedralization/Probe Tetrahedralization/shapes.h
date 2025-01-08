@@ -275,13 +275,13 @@ bool get_glb_vertex_info(const char* glb_path, asset_vertex_info& glb_vert_info,
                     glm::vec4 norm4 = glm::vec4(x,y,z, 0.0f);
                     norm4 = world_mat * info.transform * norm4;
                     
-                    glb_vert_info.normals.push_back(normalize(glm::vec3(norm4.x, norm4.y, norm4.z)));
+                    glb_vert_info.normals.push_back(normalize(glm::vec3(-norm4.x, norm4.y, norm4.z)));
                     glb_vert_info.vertex_material.push_back(primitive.material);
                     
-                    glm::vec4 pos4 = glm::vec4(-pos_x, pos_y, pos_z, 1.0f);
+                    glm::vec4 pos4 = glm::vec4(pos_x, pos_y, pos_z, 1.0f);
                     pos4 = world_mat * info.transform * pos4;
                     
-                    glb_vert_info.positions.push_back(glm::vec3(pos4.x, pos4.y, pos4.z));
+                    glb_vert_info.positions.push_back(glm::vec3(-pos4.x, pos4.y, pos4.z));
                     
                     std::cout << "Nomal (" << i << "): (" << x << ", " << y << ", " << z << ") == Pos (" << pos_x << "," << pos_y << "," << pos_z << ")" << std::endl;
                 }
