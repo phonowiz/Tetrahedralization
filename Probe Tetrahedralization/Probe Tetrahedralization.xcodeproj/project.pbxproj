@@ -10,8 +10,8 @@
 		B920D0492D02523D00814FC1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B920D0482D02523D00814FC1 /* main.cpp */; };
 		B920D0512D0264CF00814FC1 /* tetgen.cxx in Sources */ = {isa = PBXBuildFile; fileRef = B920D0502D0264CF00814FC1 /* tetgen.cxx */; };
 		B920D0542D0265C800814FC1 /* predicates.cxx in Sources */ = {isa = PBXBuildFile; fileRef = B920D0532D0265C800814FC1 /* predicates.cxx */; };
+		B92711F82D2FB6B3000408F0 /* tiny_gltf.cc in Sources */ = {isa = PBXBuildFile; fileRef = B9270CAA2D2FB6AE000408F0 /* tiny_gltf.cc */; };
 		B95A02F02D24E11900549F71 /* shapes.h in Sources */ = {isa = PBXBuildFile; fileRef = B9B495032D0A325300F621A1 /* shapes.h */; };
-		B95FAEF02D25C99E00CC944E /* tiny_gltf.cc in Sources */ = {isa = PBXBuildFile; fileRef = B95FAEEF2D25C99E00CC944E /* tiny_gltf.cc */; };
 		B95FAEF22D25CD2C00CC944E /* assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = B95FAEF12D25CD1300CC944E /* assets */; };
 		B9D97FC12D0F9AE9009DA310 /* helpers.h in Sources */ = {isa = PBXBuildFile; fileRef = B920D0562D02E95C00814FC1 /* helpers.h */; };
 /* End PBXBuildFile section */
@@ -37,8 +37,8 @@
 		B920D0532D0265C800814FC1 /* predicates.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = predicates.cxx; sourceTree = "<group>"; };
 		B920D0552D02E5F100814FC1 /* mathematics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mathematics.h; sourceTree = "<group>"; };
 		B920D0562D02E95C00814FC1 /* helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helpers.h; sourceTree = "<group>"; };
-		B95FAEEE2D25C96000CC944E /* tiny_gltf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tiny_gltf.h; sourceTree = "<group>"; };
-		B95FAEEF2D25C99E00CC944E /* tiny_gltf.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_gltf.cc; sourceTree = "<group>"; };
+		B9270CAA2D2FB6AE000408F0 /* tiny_gltf.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_gltf.cc; sourceTree = "<group>"; };
+		B9270CAC2D2FB6AE000408F0 /* tiny_gltf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tiny_gltf.h; sourceTree = "<group>"; };
 		B95FAEF12D25CD1300CC944E /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		B9B495032D0A325300F621A1 /* shapes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shapes.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -57,8 +57,8 @@
 		B920D03C2D02523D00814FC1 = {
 			isa = PBXGroup;
 			children = (
+				B9270C682D2FB6AE000408F0 /* tinygltf */,
 				B95FAEF12D25CD1300CC944E /* assets */,
-				B95FAEEC2D25C93700CC944E /* tiny_gltf */,
 				B920D0522D0264E700814FC1 /* tetgen1.6.0 */,
 				B920D0472D02523D00814FC1 /* Probe Tetrahedralization */,
 				B920D0462D02523D00814FC1 /* Products */,
@@ -95,20 +95,20 @@
 			path = tetgen1.6.0;
 			sourceTree = "<group>";
 		};
+		B9270C682D2FB6AE000408F0 /* tinygltf */ = {
+			isa = PBXGroup;
+			children = (
+				B9270CAA2D2FB6AE000408F0 /* tiny_gltf.cc */,
+				B9270CAC2D2FB6AE000408F0 /* tiny_gltf.h */,
+			);
+			path = tinygltf;
+			sourceTree = "<group>";
+		};
 		B95A02F12D24E2A400549F71 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		B95FAEEC2D25C93700CC944E /* tiny_gltf */ = {
-			isa = PBXGroup;
-			children = (
-				B95FAEEF2D25C99E00CC944E /* tiny_gltf.cc */,
-				B95FAEEE2D25C96000CC944E /* tiny_gltf.h */,
-			);
-			path = tiny_gltf;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -170,9 +170,9 @@
 			files = (
 				B95A02F02D24E11900549F71 /* shapes.h in Sources */,
 				B9D97FC12D0F9AE9009DA310 /* helpers.h in Sources */,
+				B92711F82D2FB6B3000408F0 /* tiny_gltf.cc in Sources */,
 				B920D0512D0264CF00814FC1 /* tetgen.cxx in Sources */,
 				B920D0492D02523D00814FC1 /* main.cpp in Sources */,
-				B95FAEF02D25C99E00CC944E /* tiny_gltf.cc in Sources */,
 				B920D0542D0265C800814FC1 /* predicates.cxx in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
