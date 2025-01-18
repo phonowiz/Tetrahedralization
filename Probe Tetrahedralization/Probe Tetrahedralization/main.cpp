@@ -430,40 +430,24 @@ void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vect
     
     printf("First Pass==================================\n");
     
-//    printf("#define vec4 float4\n");
-//    printf("#define vec3 float3\n");
-//    printf("#define vec2 float2\n");
+    printf("#define vec4 float4\n");
+    printf("#define vec3 float3\n");
+    printf("#define vec2 float2\n");
     
     printf("\tint index = int(packfragcoord2(fragCoord.xy, iResolution.xy));\n");
-    printf("\tfragColor = vec4(0.0f);\n");
     printf("\tif(index <  total_probes * 4){\n");
 
     
-    static const sh9 zero =  {};
     for(int i = 0; i < probes.size(); ++i)
     {
-        if(probes[i].sh_color.red != zero)
-        {
-            printf("\t\tif(index == %i)\n", (i * 4) + 0);
-            printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
-        }
-        if(probes[i].sh_color.green != zero)
-        {
-            printf("\t\tif(index == %i)\n", (i * 4) + 1);
-            printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
-        }
-        
-        if(probes[i].sh_color.blue != zero)
-        {
-            printf("\t\tif(index == %i)\n", (i * 4) + 2);
-            printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.blue[0], probes[i].sh_color.blue[1], probes[i].sh_color.blue[2], probes[i].sh_color.blue[3]);
-        }
-
-        if(probes[i].position != glm::vec3(0.0f))
-        {
-            printf("\t\tif(index == %i)\n", (i * 4) + 3);
-            printf("\t\t\tfragColor = vec4(%f, %f, %f, 0.0f);\n", probes[i].position[0], probes[i].position[1], probes[i].position[2]);
-        }
+        printf("\t\tif(index == %i)\n", (i * 4) + 0);
+        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
+        printf("\t\tif(index == %i)\n", (i * 4) + 1);
+        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
+        printf("\t\tif(index == %i)\n", (i * 4) + 2);
+        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.blue[0], probes[i].sh_color.blue[1], probes[i].sh_color.blue[2], probes[i].sh_color.blue[3]);
+        printf("\t\tif(index == %i)\n", (i * 4) + 3);
+        printf("\t\t\tfragColor = vec4(%f, %f, %f, 0.0f);\n", probes[i].position[0], probes[i].position[1], probes[i].position[2]);
     }
     printf("\t}\n");
     
@@ -482,6 +466,7 @@ void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vect
     
     for(int i = 0; i < probes.size(); ++i)
     {
+        static sh9_color zero;
         int tetra_index = get_tetrahedra(probes[i].position, tetrahedras, probes);
         std::cout << "\t\td += drawPoint(ro, rd, vec3(" << probes[i].position.x << "," << probes[i].position.y << "," << probes[i].position.z << "), " << i << "," << tetra_index << ");" << std::endl;
     }
