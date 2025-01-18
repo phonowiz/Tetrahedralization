@@ -22,149 +22,9 @@ void run_collector(collector_manager* manager, int index)
 {
     manager->collectors[index]();
 }
-void generate_probes(tetgenio& in, std::vector<probe_info>& probes )
-{
-    collector_manager manager;
-    
-    constexpr float total_width = 8.0f;
-    constexpr float total_height = 8.0f;
-    
-    static_assert(total_width == total_height);
-    
-    float steps =  2.0f;
-    
-    //X PLANE
-    for(float w = -total_width * .5f; w < total_width * .5f; w += steps)
-    {
-        for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
-        {
-            glm::vec3 ro( -total_width * .5f, w,  h);
-            glm::vec3 rd(1.0f, 0.0f, 0.0f);
-            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
-            
-            int index = 0;
-            int count = 0;
-            while(true)
-            {
-                index = count++ % manager.collectors.size();
-                if(manager.collectors[index].is_done())
-                {
-                    if(manager.threads[index].joinable())
-                    {
-                        manager.threads[index].join();
-                    }
-                    
-                    break;
-                }
-            }
-            
-            manager.collectors[index].ro = ro;
-            manager.collectors[index].rd = rd;
-            manager.collectors[index].maxd = total_width;
-        
-            manager.threads[index] = std::thread(run_collector, &manager, index);
-        }
-    }
-    
-    int count = 0;
-    for(std::thread& t : manager.threads)
-    {
-        if(t.joinable())
-            t.join();
-        probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
-        manager.probes[count].clear();
-        count++;
-    }
-    
-    //Z PLANE
-    for(float w = -total_width * .5f * .5f; w < total_width * .5f; w += steps)
-    {
-        for(float h = -total_height * .5f * .5f; h < total_height * .5f; h += steps)
-        {
-            glm::vec3 ro(w, h, total_height * .5f);
-            glm::vec3 rd(0.0f, 0.0f, -1.0f);
 
-            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
 
-            int index = 0;
-            int count = 0;
-            while(true)
-            {
-                index = count++ % manager.collectors.size();
-                if(manager.collectors[index].is_done())
-                {
-                    if(manager.threads[index].joinable())
-                    {
-                        manager.threads[index].join();
-                    }
-                    break;
-                }
-            }
-
-            manager.collectors[index].ro = ro;
-            manager.collectors[index].rd = rd;
-            manager.collectors[index].maxd = total_width;
-
-            manager.threads[index] = std::thread(run_collector, &manager, index);
-        }
-    }
-
-    count = 0;
-    for(std::thread& t : manager.threads)
-    {
-        if(t.joinable())
-            t.join();
-        probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
-        manager.probes[count].clear();
-        count++;
-    }
-    
-    //Y IS UP!!!
-    for(float w = -total_width * .5f * .8f; w < total_width * .5f * .8f; w += steps)
-    {
-        for(float h = -total_height * .5f * .8f; h < total_height * .5f * .8f; h += steps)
-        {
-            glm::vec3 ro(w, total_height, h);
-            glm::vec3 rd(0.0f, -1.0f, 0.0f);
-
-            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
-            
-            int index = 0;
-            int count = 0;
-            while(true)
-            {
-                index = count++ % manager.collectors.size();
-                if(manager.collectors[index].is_done())
-                {
-                    if(manager.threads[index].joinable())
-                    {
-                        manager.threads[index].join();
-                    }
-                    break;
-                }
-            }
-
-            manager.collectors[index].ro = ro;
-            manager.collectors[index].rd = rd;
-            manager.collectors[index].maxd = 20.0f;
-
-            manager.threads[index] = std::thread(run_collector, &manager, index);
-        }
-    }
-
-    count = 0;
-    for(std::thread& t : manager.threads)
-    {
-        if(t.joinable())
-            t.join();
-        probes.insert(probes.end(), manager.probes[count].begin(), manager.probes[count].end());
-        count++;
-    }
-
-    populate_tetgenio(in, probes);
-}
-
-void light_probes(std::vector<probe_info>& probes)
+void light_probes(std::vector<probe_info>& probes, const asset_vertex_info& vert_info)
 {
 
     static const size_t Size = 20;
@@ -176,34 +36,32 @@ void light_probes(std::vector<probe_info>& probes)
         printf("path tracing probe [%d]: %f, %f, %f\n", index++, p.position.x, p.position.y, p.position.z);
         
         const float samples = Size;
+        const float max_trace = 20.f;
         for(int i = 0; i < samples; i++)
         {
-            glm::vec3 normal = calc_normal(p.position, 0.0f);
+            glm::vec3 normal = p.normal;
             
             assert(!std::isnan(normal.x) && !std::isnan(normal.y) && !std::isnan(normal.z));
             assert(normal.x != 0 || normal.y != 0 || normal.z != 0 );
-            glm::vec3 rd = random_ray(normal, glm::vec4(p.position, 0.0f));
+            glm::vec3 rd = random_ray(normal, glm::vec4(p.position, 0.0f)) * max_trace;
             assert(!std::isnan(rd.x) && !std::isnan(rd.y) && !std::isnan(rd.z));
             
-            futures[i] = std::async(std::launch::async, &poor_man_pathtracer, p.position, rd, results.data(), i);
+            futures[i] = std::async(std::launch::async, &poor_man_pathtracer_tri, p.position, rd, results.data(), vert_info, i);
         }
         
         for(int i = 0; i < futures.size(); ++i)
         {
             futures[i].wait();
             
-            sh9 sh_dir = sh_evaluate(results[i].dir);
+            sh9 sh_dir = sh_evaluate(p.normal);
             
-            glm::vec3 probe_color = results[i].color;
-            if(probe_color != glm::vec3(0.0f))
-                printf("lighting probe with color <%f, %f, %f>\n", probe_color.r, probe_color.g, probe_color.b);
             p.sh_color.red =  sh_add(p.sh_color.red, sh_scale(sh_dir, results[i].color.r));
             p.sh_color.green = sh_add(p.sh_color.green, sh_scale(sh_dir, results[i].color.g));
             p.sh_color.blue = sh_add(p.sh_color.blue, sh_scale(sh_dir, results[i].color.b));
             
             
         }
-        const float sh_factor = (4.0f * M_PI) / samples;
+        const float sh_factor = (2.0f * M_PI) / samples;
         
         p.sh_color.red = sh_scale(p.sh_color.red, sh_factor);
         p.sh_color.green = sh_scale(p.sh_color.green, sh_factor);
@@ -215,9 +73,9 @@ void light_probes(std::vector<probe_info>& probes)
             assert(!std::isnan(p.sh_color.green[i]));
             assert(!std::isnan(p.sh_color.blue[i]));
         }
-        //printf("\tcolor R: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.red[0], p.sh_color.red[1], p.sh_color.red[2], p.sh_color.red[3], p.sh_color.red[4], p.sh_color.red[5], p.sh_color.red[6], p.sh_color.red[7], p.sh_color.red[8]);
-        //printf("\tcolor G: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.green[0], p.sh_color.green[1], p.sh_color.green[2], p.sh_color.green[3], p.sh_color.green[4], p.sh_color.green[5], p.sh_color.green[6], p.sh_color.green[7], p.sh_color.green[8]);
-        //printf("\tcolor B: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.blue[0], p.sh_color.blue[1], p.sh_color.blue[2], p.sh_color.blue[3], p.sh_color.blue[4], p.sh_color.blue[5], p.sh_color.blue[6], p.sh_color.blue[7], p.sh_color.blue[8]);
+        printf("\tcolor R: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.red[0], p.sh_color.red[1], p.sh_color.red[2], p.sh_color.red[3], p.sh_color.red[4], p.sh_color.red[5], p.sh_color.red[6], p.sh_color.red[7], p.sh_color.red[8]);
+        printf("\tcolor G: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.green[0], p.sh_color.green[1], p.sh_color.green[2], p.sh_color.green[3], p.sh_color.green[4], p.sh_color.green[5], p.sh_color.green[6], p.sh_color.green[7], p.sh_color.green[8]);
+        printf("\tcolor B: %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f\n", p.sh_color.blue[0], p.sh_color.blue[1], p.sh_color.blue[2], p.sh_color.blue[3], p.sh_color.blue[4], p.sh_color.blue[5], p.sh_color.blue[6], p.sh_color.blue[7], p.sh_color.blue[8]);
     }
 }
 
@@ -339,9 +197,7 @@ void test_unprojection(std::vector<tetrahedra>& tetrahedras, std::vector<probe_i
         int j =0;
         for(probe_info& p : probes)
         {
-            glm::vec3 rd = calc_normal(p.position, 0.0);
-            //glm::vec3 rd = glm::normalize(ro - p.position);
-            
+            glm::vec3 rd = p.normal;
             glm::vec3 color = get_color(rd, p.position, tetrahedras, probes);
             
             printf("color picked for probe [%d]: %.7f, %.7f, %.7f\n", j, color.r, color.g, color.b);
@@ -352,134 +208,73 @@ void test_unprojection(std::vector<tetrahedra>& tetrahedras, std::vector<probe_i
 
 void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vector<tetrahedra>& tetrahedras)
 {
-    assert(out.firstnumber == 0 && "this will not work unless first number is zero");
-    assert(out.numberofcorners == 4);
-    for(int i = 0; i < out.numberoftetrahedra; ++i)
-    {
-        tetrahedras.push_back(tetrahedra());
-        tetrahedras[i].neighbors[0] = out.neighborlist[i * 4];
-        tetrahedras[i].neighbors[1] = out.neighborlist[i * 4 + 1];
-        tetrahedras[i].neighbors[2] = out.neighborlist[i * 4 + 2];
-        tetrahedras[i].neighbors[3] = out.neighborlist[i * 4  + 3];
-
-        for(int j = 0; j < out.numberofcorners; ++j)
-            tetrahedras[i].probes[j] = out.tetrahedronlist[i * out.numberofcorners + j];
-        
-        glm::vec3 column0 = probes[tetrahedras[i].probes[0]].position - probes[tetrahedras[i].probes[3]].position;
-        glm::vec3 column1 = probes[tetrahedras[i].probes[1]].position - probes[tetrahedras[i].probes[3]].position;
-        glm::vec3 column2 = probes[tetrahedras[i].probes[2]].position - probes[tetrahedras[i].probes[3]].position;
-
-        glm::mat3 mat(column0, column1, column2);
-        
-        tetrahedras[i].matrix = glm::inverse(mat);
-    }
     
-    int origin_tetra = find_origin_tetrahedra(tetrahedras, probes);
+//    printf("Baked Data========================\n");
+////    printf("#define vec4 float4\n");
+////    printf("#define vec3 float3\n");
+////    printf("#define vec2 float2\n");
+//
+//    printf("\tint index = int(packfragcoord2(fragCoord.xy, iResolution.xy));\n");
+//    printf("\tif(index <  total_probes * 4){\n");
+//
+//    for(int i = 0; i < probes.size(); ++i)
+//    {
+//        printf("\t\tif(index == %i)\n", (i * 4) + 0);
+//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
+//        printf("\t\tif(index == %i)\n", (i * 4) + 1);
+//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
+//        printf("\t\tif(index == %i)\n", (i * 4) + 2);
+//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
+//        printf("\t\tif(index == %i)\n", (i * 4) + 3);
+//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, 0.0f);\n", probes[i].position[0], probes[i].position[1], probes[i].position[2]);
+//    }
+//    printf("\t}\n");
+//
+//    printf("\telse{\n");
+//    for( int i = 0; i < out.numberoftetrahedra; ++i)
+//    {
+//        printf("\t\tif(index == %i)\n", (i * 2) + 0 + (int)probes.size() * 4);
+//        //printf("\t\tif(index == %i)", i);
+//        printf("\t\t\tgl_FragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].probes[0], tetrahedras[i].probes[1], tetrahedras[i].probes[2], tetrahedras[i].probes[3]);
+//        printf("\t\tif(index == %i)\n", (i * 2) + 1 + (int)probes.size() * 4);
+//        printf("\t\t\tgl_FragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].neighbors[0], tetrahedras[i].neighbors[1], tetrahedras[i].neighbors[2], tetrahedras[i].neighbors[3]);
+//    }
+//
+//    printf("\t}\n\n");
     
-    printf("Common ======================================\n"
-           
-           "float packfragcoord2 (vec2 p, vec2 s) {\n"
-               "\treturn floor(p.y) * s.x + p.x;\n"
-           "}\n"
-           "vec2 unpackfragcoord2 (float p, vec2 s) {\n"
-               "\tfloat x = mod(p, s.x);\n"
-               "\tfloat y = (p - x) / s.x + 0.5;\n"
-               "\treturn vec2(x,y);\n"
-           "}\n"
-           "ivec2 unpackfragcoord2 (int p, ivec2 s) {\n"
-               "\tint x = p %% s.x;\n"
-               "\tint y = (p - x) / s.x;\n"
-               "\treturn ivec2(x,y);\n"
-           "}\n"
-           "float packfragcoord3 (vec3 p, vec3 s) {\n"
-               "\treturn floor(p.z) * s.x * s.y + floor(p.y) * s.x + p.x;\n"
-           "}\n"
-           "int packfragcoord3 (ivec3 p, ivec3 s) {\n"
-               "\treturn p.z * s.x * s.y + p.y * s.x + p.x;\n"
-           "}\n"
-           "vec3 unpackfragcoord3 (float p, vec3 s) {\n"
-               "\tfloat x = mod(p, s.x);\n"
-               "\tfloat y = mod((p - x) / s.x, s.y);\n"
-               "\tfloat z = (p - x - floor(y) * s.x) / (s.x * s.y);\n"
-               "\treturn vec3(x,y+0.5,z+0.5);\n"
-           "}\n"
-
-           "struct tetrahedra\n"
-           "{\n"
-                "\tivec4   probes;\n"
-                "\tivec4   neighbors;\n"
-                "\tmat3    matrix;\n"
-           "};\n"
-           
-           "const int origin_tetra = %d;\n"
-           "struct probe\n"
-           "{\n"
-               "\tvec4 shr;\n"
-               "\tvec4 shg;\n"
-               "\tvec4 shb;\n"
-               "\tvec3 position;\n"
-           "};\n"
-           "const uint total_tetras = %d;\n"
-           "const uint total_probes = %d;\n"
-           ,
-           origin_tetra,
-           (uint)(tetrahedras.size()),
-           (uint)probes.size()
-           );
-    
-    
-    printf("First Pass==================================\n");
-    
-    printf("#define vec4 float4\n");
-    printf("#define vec3 float3\n");
-    printf("#define vec2 float2\n");
-    
-    printf("\tint index = int(packfragcoord2(fragCoord.xy, iResolution.xy));\n");
-    printf("\tif(index <  total_probes * 4){\n");
-
-    
+    printf("Second Pass==================================\n");
+    printf("var diameter = 0.08;\n");
     for(int i = 0; i < probes.size(); ++i)
     {
-        printf("\t\tif(index == %i)\n", (i * 4) + 0);
-        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
-        printf("\t\tif(index == %i)\n", (i * 4) + 1);
-        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
-        printf("\t\tif(index == %i)\n", (i * 4) + 2);
-        printf("\t\t\tfragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.blue[0], probes[i].sh_color.blue[1], probes[i].sh_color.blue[2], probes[i].sh_color.blue[3]);
-        printf("\t\tif(index == %i)\n", (i * 4) + 3);
-        printf("\t\t\tfragColor = vec4(%f, %f, %f, 0.0f);\n", probes[i].position[0], probes[i].position[1], probes[i].position[2]);
-    }
-    printf("\t}\n");
-    
-    printf("\telse{\n");
-    for( int i = 0; i < out.numberoftetrahedra; ++i)
-    {
-        printf("\t\tif(index == %i)\n", (i * 2) + 0 + (int)probes.size() * 4);
-        printf("\t\t\tfragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].probes[0], tetrahedras[i].probes[1], tetrahedras[i].probes[2], tetrahedras[i].probes[3]);
-        printf("\t\tif(index == %i)\n", (i * 2) + 1 + (int)probes.size() * 4);
-        printf("\t\t\tfragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].neighbors[0], tetrahedras[i].neighbors[1], tetrahedras[i].neighbors[2], tetrahedras[i].neighbors[3]);
+        printf("\tsphere%i = BABYLON.MeshBuilder.CreateSphere(\"sphere%i\", {diameter: diameter, segments: 5}, scene);\n", i,i);
+        printf("\tsphere%i.position.x= %f, sphere%i.position.y = %f, sphere%i.position.z = %f;\n",
+               i, probes[i].position[0], i, probes[i].position[1], i, probes[i].position[2]);
+        
+        printf("\tsphere%i.material = simpleMat.clone(\"sphere%i\");\n", i,i);
+        printf("\tsphere%i.material.setArray3(\"probePosition\", sphere%i.position);\n",i,i);
+        printf("\tsphere%i.material.setArray3(\"probeNormal\", new Float32Array([%f, %f, %f]));\n",i, probes[i].normal.x, probes[i].normal.y, probes[i].normal.z);
+        printf("\tsphere%i.material.setArray4(\"shColorR\", new Float32Array([%f, %f, %f, %f]));\n", i, probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
+        printf("\tsphere%i.material.setArray4(\"shColorG\", new Float32Array([%f, %f, %f, %f]));\n", i, probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
+        printf("\tsphere%i.material.setArray4(\"shColorB\", new Float32Array([%f, %f, %f, %f]));\n", i, probes[i].sh_color.blue[0], probes[i].sh_color.blue[1], probes[i].sh_color.blue[2], probes[i].sh_color.blue[3]);
     }
     
-    printf("\t}\n\n");
-    
-    printf("===========================================\n\n");
-    
-    for(int i = 0; i < probes.size(); ++i)
-    {
-        static sh9_color zero;
-        int tetra_index = get_tetrahedra(probes[i].position, tetrahedras, probes);
-        std::cout << "\t\td += drawPoint(ro, rd, vec3(" << probes[i].position.x << "," << probes[i].position.y << "," << probes[i].position.z << "), " << i << "," << tetra_index << ");" << std::endl;
-    }
+    printf("==================================\n");
+
 }
 
 int main(int argc, const char * argv[]) {
     
     
+    asset_vertex_info vertex_info = {};
+    glm::mat4 world_mat = glm::mat4(1.0f);
+    get_glb_vertex_info("assets/cornell_box/cornell_box-_original.glb", vertex_info, world_mat);
+    
     std::vector<probe_info> probes;
     std::vector<tetrahedra> tetrahedras;
     tetgenio in, out;
-    generate_probes(in, probes);
-    light_probes(probes);
+    generate_probes(in, probes, vertex_info);
+    
+    light_probes(probes, vertex_info);
     
     printf("total probes count: %d\n", (int)probes.size());
     // Output the PLC to files 'barin.node' and 'barin.poly'.

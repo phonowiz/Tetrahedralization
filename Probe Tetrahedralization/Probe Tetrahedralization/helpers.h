@@ -16,6 +16,7 @@
 #include <random>
 #include <thread>
 #include "glm/glm.hpp"
+#include "glm/gtx/intersect.hpp"
 
 
 
@@ -129,6 +130,7 @@ struct probe_info
 {
     sh9_color sh_color = {};
     glm::vec3 position = {};
+    glm::vec3 normal =  {};
 };
 
 struct tracing_result
@@ -145,8 +147,8 @@ public:
     std::atomic<bool>* done = nullptr;
     std::vector<probe_info>* probes = nullptr;
     
-    float maxd = 10.0f;
-
+    const asset_vertex_info* vert_info = nullptr;
+    
     probe_collector(){};
     probe_collector(glm::vec3 ro, glm::vec3 rd) : ro(ro), rd(rd) {}
     
@@ -155,44 +157,49 @@ public:
     void operator()()
     {
         (*done) = false;
-        float t = 0.0f;
-        glm::vec3 origin = ro;
-        glm::vec3 dir = rd;
-        
+        const asset_vertex_info& info = *vert_info;
         std::vector<probe_info>& pr = *probes;
-        
-        while(std::abs(t) < maxd)
+       
+        //TODO: OPTIMIZE
+        for(const triangle& tri : info.triangles)
         {
-            float h = do_model(ro + rd * t, 0.0f).x;
+            glm::vec2 bary_pos = glm::vec2(0.f);
             
-            if(( glm::abs(h) < precis))
+            glm::vec3 p0 = info.positions[tri[0]];
+            glm::vec3 p1 = info.positions[tri[1]];
+            glm::vec3 p2 = info.positions[tri[2]];
+            
+            float distance = 0.0f;
+            
+            if(glm::intersectRayTriangle(ro, rd, p0, p1, p2, bary_pos, distance))
             {
-                glm::vec3 c = origin + dir * t;
-                probe_info info = {};
-                info.position = c;
-                if(!pr.empty())
-                {
-                    glm::vec3 v = pr.back().position - c;
-                    if(glm::length(v) > (.4f ))
-                    {
-                        pr.push_back(info);
-                    }
-                }
-                else
-                    pr.push_back(info);
+//                if(distance > 1.0f || 0.0f < distance)
+//                    continue;
+                probe_info probe = {};
+                glm::vec3 full_bary = glm::vec3(bary_pos, glm::max(1.0f - bary_pos.x - bary_pos.y, 0.0f));
+                assert(bary_pos.x + bary_pos.y <= (1.0f + precis));
+                //printf("\tinterpolating between\n\t<%f, %f, %f>\n\t<%f, %f, %f>\n\t<%f %f %f>\n", p0.x, p0.y,p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+                probe.position = p0 * full_bary.x + p1 * full_bary.y + p2 * full_bary.z;
+                
+                glm::vec3 n0 = info.normals[tri[0]];
+                glm::vec3 n1 = info.normals[tri[1]];
+                glm::vec3 n2 = info.normals[tri[2]];
+                probe.normal = n0 * full_bary.x + n1 * full_bary.y + n2 * full_bary.z;
+                probe.normal = glm::normalize(probe.normal);
+
+                //printf("\thit found at %f, %f, %f at distance: %f\n", probe.position[0],probe.position[1],probe.position[2], distance);
+                
+                pr.push_back(probe);
             }
-            
-            t += precis;
         }
-        
         (*done) = true;
     }
 };
 
 struct tetrahedra
 {
-    glm::ivec4 neighbors = {};
-    glm::ivec4 probes = {};
+    glm::ivec4          neighbors = {};
+    glm::ivec4          probes = {};
     glm::mat3           matrix = glm::mat3(1.0f);
 };
 
@@ -218,9 +225,6 @@ struct collector_manager
 };
 
 float max_distance = 10.0f;
-
-
-
 void populate_tetgenio(tetgenio& in,
                        const std::vector<probe_info>& vertices)
 {
@@ -236,32 +240,10 @@ void populate_tetgenio(tetgenio& in,
         in.pointlist[pnt + 2] = vertices[i].position.z;
     }
     
-    in.numberoffacets = 0;//(int)triangles.size();
-    in.facetlist = nullptr;//new tetgenio::facet[in.numberoffacets];
-    in.facetmarkerlist = nullptr;//new int[in.numberoffacets];
-    
-//    int count = 0;ß
-//    for(const triangle3d& tri : triangles)
-//    {
-//        tetgenio::facet *f = &in.facetlist[count];
-//        f->numberofpolygons = 1;
-//        f->polygonlist = new tetgenio::polygon();
-//        f->numberofholes = 0;
-//        f->holelist = nullptr;
-//        
-//        tetgenio::polygon *p = f->polygonlist;
-//        p->numberofvertices = 3;
-//        p->vertexlist = new int[p->numberofvertices];
-//        p->vertexlist[0] = tri.pt1;
-//        p->vertexlist[1] = tri.pt2;
-//        p->vertexlist[2] = tri.pt3;
-//        
-//        in.facetmarkerlist[count] = count;
-//        count++;
-//    }
-    
+    in.numberoffacets = 0;
+    in.facetlist = nullptr;
+    in.facetmarkerlist = nullptr;
 }
-
 
 void generate_input_tetgen(tetgenio& in)
 {
@@ -280,66 +262,6 @@ void generate_input_tetgen(tetgenio& in)
         info.position = vec;
         vertices.push_back(info);
     }
-//
-//    for(int i = 0; i < max_vertices; ++i)
-//    {
-//        for(int j = 0; j < max_vertices; ++j)
-//        {
-//            if(i == j)
-//                continue;
-//            vertices[i].segments.push_back(segment3d(i, j));
-//        }
-//    }
-//
-//    std::vector<uint32_t> path;
-//    uint32_t origin = 0;
-//    std::vector<triangle3d> triangles;
-//    uint32_t vertex_index = 0;
-//    find_triangles(vertices, path, origin, vertex_index, triangle_set);
-//
-//    std::unordered_set<triangle3d> final_triangles;
-//    std::unordered_set<triangle3d> removed_triangles;
-//
-//    for(const triangle3d& tri : triangle_set)
-//    {
-//        bool intersect = false;
-//        for(const triangle3d& tri2 : triangle_set)
-//        {
-//            if(tri == tri2)
-//                continue;
-//
-//            intersect = triangle_intersect_no_edge_or_vertex(tri, tri2, vertices);
-//            if(intersect)
-//                break;
-//        }
-//
-//        if(intersect)
-//            removed_triangles.insert(tri);
-//        else
-//            final_triangles.insert(tri);
-//    }
-//
-//    auto removed_iter = removed_triangles.begin();
-//    while(removed_iter != removed_triangles.end())
-//    {
-//        bool intersect = false;
-//        const triangle3d& removed = *removed_iter;
-//
-//        for(const triangle3d& final : final_triangles)
-//        {
-//            if(removed != final)
-//            {
-//                intersect = triangle_intersect_no_edge_or_vertex(final, removed, vertices);
-//                if(intersect)
-//                    break;
-//            }
-//        }
-//
-//        if(!intersect)
-//            final_triangles.insert(removed);
-//
-//        removed_iter++;
-//    }
     
     populate_tetgenio(in, vertices);
 }
@@ -363,18 +285,6 @@ float hash(float x)
 
 glm::vec3 random_ray(glm::vec3 n, glm::vec4 seed)
 {
-//    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-//    auto duration = now.time_since_epoch();
-    
-//    float nanoseconds = (float)rand();//float(std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
-//    glm::vec2 uv = glm::vec2(hash(51.5f*seed.x + 15.6f*seed.y + 37.1f*seed.z + 13.7f*seed.w + 15.1f*nanoseconds),
-//                   hash(19.6f*seed.x + 91.1f*seed.y + 15.1f*seed.z + 21.1f*seed.w + 7.8f*nanoseconds));
-//
-//    assert(!(std::isnan(uv.x)) && !(std::isnan(uv.x)));
-//    glm::vec3 temp =lambert_no_tangent(n, uv);
-//    assert(!isnan(temp.x) && !isnan(temp.y) && !isnan(temp.z));
-//    return temp;
-    
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(0.0f, 1.0f);
@@ -407,22 +317,72 @@ struct light_info
 
 
 //based off of https://www.shadertoy.com/view/4fyfWR
-glm::vec3 pathtrace(glm::vec3 ro, glm::vec3 rd, bool& collision, float& t)
+//glm::vec3 pathtrace(glm::vec3 ro, glm::vec3 rd, bool& collision, float& t)
+//{
+//    collision = false;
+//    t = precis * 2.0f;
+//
+//    glm::vec3 result = glm::vec3(0.0f);
+//    while(std::abs(t) < max_distance)
+//    {
+//        float h = do_model(ro + rd * t, 0.0f).x;
+//        if(( glm::abs(h) < precis))
+//        {
+//            result =  do_material(ro + rd * t, 0.0f);
+//            collision = true;
+//            break;
+//        }
+//        t += precis;
+//    }
+//    
+//    return result;
+//}
+
+struct pathtrace_result
+{
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 normal = glm::vec3(0.0f);
+    glm::vec3 color = glm::vec3(0.0f);
+    float distance = 0.0f;
+};
+
+
+
+pathtrace_result pathtrace_tri(glm::vec3 ro, glm::vec3 rd, bool& collision, const asset_vertex_info& vert_info)
 {
     collision = false;
-    t = precis * 2.0f;
-
-    glm::vec3 result = glm::vec3(0.0f);
-    while(std::abs(t) < max_distance)
+    
+    //TODO: OPTIMIZE THIS
+    pathtrace_result result;
+    for(const triangle& tri : vert_info.triangles)
     {
-        float h = do_model(ro + rd * t, 0.0f).x;
-        if(( glm::abs(h) < precis))
+        glm::vec3 p0 = vert_info.positions[tri[0]];
+        glm::vec3 p1 = vert_info.positions[tri[1]];
+        glm::vec3 p2 = vert_info.positions[tri[2]];
+        
+        glm::vec2 bary_pos = glm::vec2(0.0f);
+        float distance = 0.f;
+        collision = glm::intersectRayTriangle(ro, rd, p0, p1, p2, bary_pos, distance);
+        
+        if(collision)
         {
-            result =  do_material(ro + rd * t, 0.0f);
-            collision = true;
+            glm::vec3 n0 = vert_info.normals[tri[0]];
+            glm::vec3 n1 = vert_info.normals[tri[1]];
+            glm::vec3 n2 = vert_info.normals[tri[2]];
+            
+            glm::vec3 col0 = vert_info.materials[vert_info.vertex_material[tri[0]]];
+            glm::vec3 col1 = vert_info.materials[vert_info.vertex_material[tri[1]]];
+            glm::vec3 col2 = vert_info.materials[vert_info.vertex_material[tri[2]]];
+            
+            glm::vec3 full_bary = glm::vec3(bary_pos, glm::max((1.0f - bary_pos.x - bary_pos.y), 0.0f));
+            assert((bary_pos.x + bary_pos.y) <= (1.0f + precis));
+            result.position = p0 * full_bary.x + p1 * full_bary.y + p2 * full_bary.z;
+            result.normal = n0 * full_bary.x + n1 * full_bary.y + n2 * full_bary.z;
+            result.normal = glm::normalize(result.normal);
+            result.color = col0 * full_bary.x + col1 * full_bary.y + col2 * full_bary.z;
+            result.distance = distance;
             break;
         }
-        t += precis;
     }
     
     return result;
@@ -435,62 +395,201 @@ struct pathtracer_info
 };
 
 
-static void poor_man_pathtracer(glm::vec3 ro, glm::vec3 rd, tracing_result* results, int index)
+//static void poor_man_pathtracer(glm::vec3 ro, glm::vec3 rd, tracing_result* results, int index)
+//{
+//    const int BOUNCE_TOTAL = 2;
+//    
+//    glm::vec3 color = glm::vec3(0.0f);
+//    light_info light =  {};
+//    
+//    //these must match the shader..
+//    light.position = glm::vec3(0.f, 8.2f, .0f);
+//    light.color = glm::vec3(.500f, .50f, .500f);
+//    
+//    glm::vec3 to_light_dir = glm::vec3(0.0f);
+//    glm::vec3 surface_normal = glm::vec3(0.0f);
+//    
+//    float t = 0.0f;
+//    for(int i = 0; i < BOUNCE_TOTAL; ++i)
+//    {
+//        bool collision = false;
+//        glm::vec3 surface_color = pathtrace(ro, rd, collision, t);
+//        glm::vec3 light_color = glm::vec3(0.0f);
+//        glm::vec3 c = ro + rd * t;
+//        if(collision)
+//        {
+//            to_light_dir = light.position - c;
+//            to_light_dir = glm::normalize(to_light_dir);
+//            surface_normal = calc_normal(c, 0.0f);
+//            
+//            float to_light_t = precis;
+//
+//            while( glm::abs(to_light_t) < max_distance)
+//            {
+//                glm::vec3 test = c + to_light_dir * to_light_t;
+//                glm::vec3 l = light.position - test;
+//                
+//                if( glm::length(l) <  precis)
+//                {
+//                    light_color = light.color;
+//                    break;
+//                }
+//                
+//                float h = do_model(test, 0.0f).x;
+//                bool occluded = (glm::abs(h) < precis);
+//                if(occluded)
+//                    break;
+//                to_light_t += precis;
+//            }
+//        }
+//        
+//        color += (surface_color * light_color) * glm::max(0.0f, glm::dot(to_light_dir, surface_normal));
+//
+//        ro = ro + rd * t;
+//        
+//        glm::vec3 normal = calc_normal(ro, 0.0f);
+//        rd = random_ray(normal, glm::vec4(ro, float(i)));
+//    }
+//    
+//    results[index].color = color;
+//    results[index].dir = rd;
+//}
+
+
+static void poor_man_pathtracer_tri(glm::vec3 ro, glm::vec3 rd, tracing_result* results, const asset_vertex_info& vert_info, int index)
 {
-    const int BOUNCE_TOTAL = 2;
+    const int BOUNCE_TOTAL = 1;
     
     glm::vec3 color = glm::vec3(0.0f);
     light_info light =  {};
+    glm::vec3 original_rd = rd;
     
     //these must match the shader..
-    light.position = glm::vec3(0.f, 8.2f, .0f);
+    light.position = glm::vec3(0.f, 1.8f, .0f);
     light.color = glm::vec3(.500f, .50f, .500f);
+
     
     glm::vec3 to_light_dir = glm::vec3(0.0f);
-    glm::vec3 surface_normal = glm::vec3(0.0f);
     
-    float t = 0.0f;
     for(int i = 0; i < BOUNCE_TOTAL; ++i)
     {
         bool collision = false;
-        glm::vec3 surface_color = pathtrace(ro, rd, collision, t);
+        
+        pathtrace_result result = pathtrace_tri(ro, rd, collision, vert_info);
         glm::vec3 light_color = glm::vec3(0.0f);
-        glm::vec3 c = ro + rd * t;
         if(collision)
         {
-            to_light_dir = light.position - c;
-            to_light_dir = glm::normalize(to_light_dir);
-            surface_normal = calc_normal(c, 0.0f);
-            
-            float to_light_t = precis;
+            to_light_dir = light.position - result.position;
 
-            while( glm::abs(to_light_t) < max_distance)
+            collision = false;
+            glm::vec3 dir = glm::normalize(to_light_dir) * 0.01f;
+            pathtrace_result light_result = pathtrace_tri(result.position + dir, to_light_dir - dir, collision, vert_info);
+            if(!collision || (light_result.distance >= 1.0f || light_result.distance <= 0.0f))
             {
-                glm::vec3 test = c + to_light_dir * to_light_t;
-                glm::vec3 l = light.position - test;
-                
-                if( glm::length(l) <  precis)
-                {
-                    light_color = light.color;
-                    break;
-                }
-                
-                float h = do_model(test, 0.0f).x;
-                bool occluded = (glm::abs(h) < precis);
-                if(occluded)
-                    break;
-                to_light_t += precis;
+                light_color = light.color;
             }
         }
         
-        color += (surface_color * light_color) * glm::max(0.0f, glm::dot(to_light_dir, surface_normal));
+        color += (result.color * light_color) * glm::max(0.0f, glm::dot(to_light_dir, result.normal));
 
-        ro = ro + rd * t;
-        
-        glm::vec3 normal = calc_normal(ro, 0.0f);
-        rd = random_ray(normal, glm::vec4(ro, float(i)));
+        rd = random_ray(result.normal, glm::vec4(ro, float(i)));
+        ro = result.position + rd * .01f;
+
     }
     
     results[index].color = color;
-    results[index].dir = rd;
+    results[index].dir = original_rd;
+}
+
+
+void generate_probes(tetgenio& in, std::vector<probe_info>& probes, const asset_vertex_info& vert_info )
+{
+    //NOTE: The following function is very specific to the demo scene
+    
+    collector_manager manager;
+    
+    constexpr float total_width = 2.0f;
+    constexpr float total_height = 2.0f;
+    
+    static_assert(total_width == total_height);
+    
+    
+    constexpr float max_tracing_length = 20.0f;
+    const float steps =  total_width / 10.0f;
+
+    //X PLANE
+    for(float w = -total_width * .5f; w <= total_width * .5f; w += steps)
+    {
+        for(float h = 0.0f; h <= total_height; h += steps)
+        {
+            glm::vec3 ro( total_width, h,  w);
+            glm::vec3 rd(-max_tracing_length, 0.0f, 0.0f);
+            const int index = 0;
+            //rd *= max_tracing_length;
+            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
+
+            manager.collectors[index].ro = ro;
+            manager.collectors[index].rd = rd;
+
+            manager.collectors[index].vert_info = &vert_info;
+            manager.collectors[index]();
+
+            probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
+            manager.probes[index].clear();
+            //count++;
+        }
+
+        printf("======done!\n");
+    }
+    
+  
+    //Z PLANE
+    for(float w = -total_width * .5f; w <= total_width * .5f; w += steps)
+    {
+        for(float h = 0.0f; h <= total_height ; h += steps)
+        {
+            glm::vec3 ro(w, h, total_height);
+            glm::vec3 rd(0.0f, 0.0f, -max_tracing_length);
+
+            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
+
+            const int index = 0;
+
+            manager.collectors[index].ro = ro;
+            manager.collectors[index].rd = rd;
+
+            manager.collectors[index].vert_info = &vert_info;
+            manager.collectors[index]();
+
+            probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
+            manager.probes[index].clear();
+        }
+    }
+    
+    //Y IS UP!!!
+    for(float w = -total_width * .5f; w < total_width * .5f; w += steps)
+    {
+        for(float h = -total_height * .5f; h < total_height * .5f; h += steps)
+        {
+            glm::vec3 ro(w, total_height, h);
+            glm::vec3 rd(0.0f, -max_tracing_length, 0.0f);
+            
+            //rd *= max_tracing_length;
+            
+            std::cout << "checking <" << ro.x << "," << ro.y << "," << ro.z << ">"  << std::endl;
+            
+            const int index = 0;
+            
+            manager.collectors[index].ro = ro;
+            manager.collectors[index].rd = rd;
+
+            manager.collectors[index].vert_info = &vert_info;
+            manager.collectors[index]();
+
+            probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
+            manager.probes[index].clear();
+        }
+    }
+    
+    populate_tetgenio(in, probes);
 }

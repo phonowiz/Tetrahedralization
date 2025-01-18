@@ -8,7 +8,8 @@
 #pragma once
 
 #include "tetgen.h"
-#include "glm/vec3.hpp"
+#include "glm/glm.hpp"
+#include "glm/gtx/intersect.hpp"
 
 #include <array>
 #include <cassert>
@@ -98,7 +99,6 @@ sh9 sh_evaluate(glm::vec3 normal)
     for(int i = 0; i < 9; ++i)
     {
         assert(!std::isnan(result[i]));
-        //assert(!std::isnan(sh2[i]));
     }
     
     return result;
@@ -140,6 +140,68 @@ struct segment3d {
 };
 
 
+struct triangle
+{
+    glm::ivec3 indices = {};
+    glm::vec3  normal = {};
+    
+    int operator[](int index) const { return indices[index]; }
+};
+
+struct asset_vertex_info
+{
+    std::vector<int>       vertex_material;
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> materials;
+    std::vector<glm::vec3> normals;
+    
+    std::vector<triangle> triangles;
+};
+
+//struct ray
+//{
+//    glm::vec3 origin;
+//    glm::vec3 direction;
+//};
+
+
+////based off of https://stackoverflow.com/questions/28165548/ray-triangle-intersection-c
+//bool intersect_ray_tri(triangle& tri, ray ray, const asset_vertex_info& vert_info) {
+//
+//    glm::vec3 e1, e2, pvec, qvec, tvec;
+//
+//    e1 = vert_info.positions[tri[1]] - vert_info.positions[tri[0]];
+//    e2 = vert_info.positions[tri[2]] - vert_info.positions[tri[0]];
+//    pvec = glm::cross(ray.direction, e2);
+//
+//    glm::vec3 n = glm::normalize(ray.direction);
+//    //NORMALIZE(pvec);
+//    float det = glm::dot(pvec, e1);
+//
+//    if (det != 0)
+//    {
+//        float invDet = 1.0f / det;
+//        tvec = ray.origin -  vert_info.positions[tri[0]];
+//        // NORMALIZE(tvec);
+//        float u = invDet * glm::dot(tvec, pvec);
+//        if (u < 0.0f || u > 1.0f)
+//        {
+//            return false;
+//        }
+//        qvec = glm::cross(tvec, e1);
+//        // NORMALIZE(qvec);
+//        float v = invDet * glm::dot(qvec, n);
+//        if (v < 0.0f || u + v > 1.0f)
+//        {
+//
+//            return false;
+//        }
+//    }
+//    else
+//        return false;
+//
+//    return true; // det != 0 and all tests for false intersection fail
+//}
 
 //struct vector3d {
 //    //REAL x, y, z;
@@ -218,33 +280,33 @@ struct segment3d {
 //}
 struct triangle3d
 {
-    uint32_t pt1;
-    uint32_t pt2;
-    uint32_t pt3;
+//    uint32_t pt1;
+//    uint32_t pt2;
+//    uint32_t pt3;
+    glm::ivec3 pts;
     
     triangle3d(uint32_t pt1_, uint32_t pt2_, uint32_t pt3_)
-        :pt1(pt1_), pt2(pt2_), pt3(pt3_)
     {
-        std::array<uint32_t, 3> k = {pt1, pt2, pt3};
+        std::array<uint32_t, 3> k = {pt1_, pt2_, pt3_};
         std::sort(k.begin(), k.end(), std::greater<uint32_t>());
         
-        pt1 = k[0];
-        pt2 = k[1];
-        pt3 = k[2];
+        pts[0] = k[0];
+        pts[1] = k[1];
+        pts[3] = k[2];
     }
     
     bool operator==(const triangle3d& rhs) const
     {
-        return std::tie(pt1, pt2, pt3) == std::tie(rhs.pt1, rhs.pt2, rhs.pt3);
+        return std::tie(pts[0], pts[1], pts[3]) == std::tie(rhs.pts[0], rhs.pts[1], rhs.pts[3]);
     }
     
     bool is_valid()
     {
-        std::unordered_set<uint32_t> pts;
-        std::array<uint32_t, 3> a = {pt1, pt2, pt3};
+        //std::unordered_set<uint32_t> pts;
+        glm::ivec3 a = pts;//glm::ivec3(pts[0], pts[1], pts[2]);
         
-        for(int i = 0; i < a.size(); ++i)
-            for(int j = 0; j < a.size(); ++j)
+        for(int i = 0; i < 3; ++i)
+            for(int j = 0; j < 3; ++j)
             {
                 if(i == j)
                     continue;
@@ -269,8 +331,8 @@ namespace std
     {
         std::size_t operator()(const triangle3d& s) const noexcept
         {
-            std::array<uint32_t, 3> k = {s.pt1, s.pt2, s.pt3 };
-            std::sort(k.begin(), k.end(), std::greater<uint32_t>());
+            std::array<int, 3> k = {s.pts[0], s.pts[1], s.pts[2] };
+            std::sort(k.begin(), k.end(), std::greater<int>());
             unsigned char * b = reinterpret_cast<unsigned char*>(&k);
             std::size_t h = 0;
             for(int i = 0; i < sizeof(k); ++i)
