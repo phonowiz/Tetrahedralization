@@ -208,39 +208,62 @@ void test_unprojection(std::vector<tetrahedra>& tetrahedras, std::vector<probe_i
 
 void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vector<tetrahedra>& tetrahedras)
 {
+    assert(out.firstnumber == 0 && "this will not work unless first number is zero");
+    assert(out.numberofcorners == 4);
+    for(int i = 0; i < out.numberoftetrahedra; ++i)
+    {
+        tetrahedras.push_back(tetrahedra());
+        tetrahedras[i].neighbors[0] = out.neighborlist[i * 4];
+        tetrahedras[i].neighbors[1] = out.neighborlist[i * 4 + 1];
+        tetrahedras[i].neighbors[2] = out.neighborlist[i * 4 + 2];
+        tetrahedras[i].neighbors[3] = out.neighborlist[i * 4  + 3];
+        for(int j = 0; j < out.numberofcorners; ++j)
+            tetrahedras[i].probes[j] = out.tetrahedronlist[i * out.numberofcorners + j];
+        
+        glm::vec3 column0 = probes[tetrahedras[i].probes[0]].position - probes[tetrahedras[i].probes[3]].position;
+        glm::vec3 column1 = probes[tetrahedras[i].probes[1]].position - probes[tetrahedras[i].probes[3]].position;
+        glm::vec3 column2 = probes[tetrahedras[i].probes[2]].position - probes[tetrahedras[i].probes[3]].position;
+        glm::mat3 mat(column0, column1, column2);
+        
+        tetrahedras[i].matrix = glm::inverse(mat);
+    }
     
-//    printf("Baked Data========================\n");
-////    printf("#define vec4 float4\n");
-////    printf("#define vec3 float3\n");
-////    printf("#define vec2 float2\n");
-//
-//    printf("\tint index = int(packfragcoord2(fragCoord.xy, iResolution.xy));\n");
-//    printf("\tif(index <  total_probes * 4){\n");
-//
-//    for(int i = 0; i < probes.size(); ++i)
-//    {
-//        printf("\t\tif(index == %i)\n", (i * 4) + 0);
-//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
-//        printf("\t\tif(index == %i)\n", (i * 4) + 1);
-//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
-//        printf("\t\tif(index == %i)\n", (i * 4) + 2);
-//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, %f);\n", probes[i].sh_color.green[0], probes[i].sh_color.green[1], probes[i].sh_color.green[2], probes[i].sh_color.green[3]);
-//        printf("\t\tif(index == %i)\n", (i * 4) + 3);
-//        printf("\t\t\tgl_FragColor = vec4(%f, %f, %f, 0.0f);\n", probes[i].position[0], probes[i].position[1], probes[i].position[2]);
-//    }
-//    printf("\t}\n");
-//
-//    printf("\telse{\n");
-//    for( int i = 0; i < out.numberoftetrahedra; ++i)
-//    {
-//        printf("\t\tif(index == %i)\n", (i * 2) + 0 + (int)probes.size() * 4);
-//        //printf("\t\tif(index == %i)", i);
-//        printf("\t\t\tgl_FragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].probes[0], tetrahedras[i].probes[1], tetrahedras[i].probes[2], tetrahedras[i].probes[3]);
-//        printf("\t\tif(index == %i)\n", (i * 2) + 1 + (int)probes.size() * 4);
-//        printf("\t\t\tgl_FragColor = vec4(%i.f, %i.f, %i.f, %i.f);\n", tetrahedras[i].neighbors[0], tetrahedras[i].neighbors[1], tetrahedras[i].neighbors[2], tetrahedras[i].neighbors[3]);
-//    }
-//
-//    printf("\t}\n\n");
+    printf("Baked Data========================\n");
+    
+    printf("const lightProbes = Float32Array([");
+    for(int i = 0; i < probes.size(); ++i)
+    {
+        if(i != 0)
+            printf(", ");
+        printf("%f, %f, %f, %f", probes[i].sh_color.red[0], probes[i].sh_color.red[1], probes[i].sh_color.red[2], probes[i].sh_color.red[3]);
+    }
+    printf("]);\n");
+    
+    printf("const tetrahedras = new Int16Array([");
+    for( int i = 0; i < out.numberoftetrahedra; ++i)
+    {
+        if( i != 0 )
+            printf(", ");
+        printf("%d, %d, %d, %d", tetrahedras[i].probes[0], tetrahedras[i].probes[1], tetrahedras[i].probes[2], tetrahedras[i].probes[3]);
+    }
+    
+    printf("]);\n");
+    
+    printf("const neighbors = new Int16Array([");
+    for( int i = 0; i < out.numberoftetrahedra; ++i)
+    {
+        if( i != 0 )
+            printf(", ");
+        printf("%d, %d, %d, %d", tetrahedras[i].neighbors[0], tetrahedras[i].neighbors[1], tetrahedras[i].neighbors[2], tetrahedras[i].neighbors[3]);
+    }
+    
+    printf("]);\n");
+    
+    
+    printf("const lightProbesBuffer = new BABYLON.Buffer(engine, lightProbes, false, false, 4);\n");
+    printf("const tetrahedrasBuffer = new BABYLON.Buffer(engine, tetrahedras, false, false, 4);\n");
+    printf("const neighborsBuffer = new BABYLON.Buffer(engine, neighbors, false, false, 4);\n");
+    
     
     printf("Second Pass==================================\n");
     printf("var diameter = 0.08;\n");
