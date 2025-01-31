@@ -154,12 +154,13 @@ public:
     
     bool is_done(){ return *done; }
     
-    void operator()()
+    void run_raytriangle_intersect()
     {
         (*done) = false;
         const asset_vertex_info& info = *vert_info;
         std::vector<probe_info>& pr = *probes;
        
+        
         //TODO: OPTIMIZE
         for(const triangle& tri : info.triangles)
         {
@@ -194,6 +195,8 @@ public:
         }
         (*done) = true;
     }
+//    void operator()()
+
 };
 
 struct tetrahedra
@@ -394,68 +397,6 @@ struct pathtracer_info
     std::array<tracing_result, Size> results;
 };
 
-
-//static void poor_man_pathtracer(glm::vec3 ro, glm::vec3 rd, tracing_result* results, int index)
-//{
-//    const int BOUNCE_TOTAL = 2;
-//    
-//    glm::vec3 color = glm::vec3(0.0f);
-//    light_info light =  {};
-//    
-//    //these must match the shader..
-//    light.position = glm::vec3(0.f, 8.2f, .0f);
-//    light.color = glm::vec3(.500f, .50f, .500f);
-//    
-//    glm::vec3 to_light_dir = glm::vec3(0.0f);
-//    glm::vec3 surface_normal = glm::vec3(0.0f);
-//    
-//    float t = 0.0f;
-//    for(int i = 0; i < BOUNCE_TOTAL; ++i)
-//    {
-//        bool collision = false;
-//        glm::vec3 surface_color = pathtrace(ro, rd, collision, t);
-//        glm::vec3 light_color = glm::vec3(0.0f);
-//        glm::vec3 c = ro + rd * t;
-//        if(collision)
-//        {
-//            to_light_dir = light.position - c;
-//            to_light_dir = glm::normalize(to_light_dir);
-//            surface_normal = calc_normal(c, 0.0f);
-//            
-//            float to_light_t = precis;
-//
-//            while( glm::abs(to_light_t) < max_distance)
-//            {
-//                glm::vec3 test = c + to_light_dir * to_light_t;
-//                glm::vec3 l = light.position - test;
-//                
-//                if( glm::length(l) <  precis)
-//                {
-//                    light_color = light.color;
-//                    break;
-//                }
-//                
-//                float h = do_model(test, 0.0f).x;
-//                bool occluded = (glm::abs(h) < precis);
-//                if(occluded)
-//                    break;
-//                to_light_t += precis;
-//            }
-//        }
-//        
-//        color += (surface_color * light_color) * glm::max(0.0f, glm::dot(to_light_dir, surface_normal));
-//
-//        ro = ro + rd * t;
-//        
-//        glm::vec3 normal = calc_normal(ro, 0.0f);
-//        rd = random_ray(normal, glm::vec4(ro, float(i)));
-//    }
-//    
-//    results[index].color = color;
-//    results[index].dir = rd;
-//}
-
-
 static void poor_man_pathtracer_tri(glm::vec3 ro, glm::vec3 rd, tracing_result* results, const asset_vertex_info& vert_info, int index)
 {
     const int BOUNCE_TOTAL = 1;
@@ -532,7 +473,7 @@ void generate_probes(tetgenio& in, std::vector<probe_info>& probes, const asset_
             manager.collectors[index].rd = rd;
 
             manager.collectors[index].vert_info = &vert_info;
-            manager.collectors[index]();
+            manager.collectors[index].run_raytriangle_intersect();
 
             probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
             manager.probes[index].clear();
@@ -559,7 +500,7 @@ void generate_probes(tetgenio& in, std::vector<probe_info>& probes, const asset_
             manager.collectors[index].rd = rd;
 
             manager.collectors[index].vert_info = &vert_info;
-            manager.collectors[index]();
+            manager.collectors[index].run_raytriangle_intersect();
 
             probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
             manager.probes[index].clear();
@@ -584,7 +525,7 @@ void generate_probes(tetgenio& in, std::vector<probe_info>& probes, const asset_
             manager.collectors[index].rd = rd;
 
             manager.collectors[index].vert_info = &vert_info;
-            manager.collectors[index]();
+            manager.collectors[index].run_raytriangle_intersect();
 
             probes.insert(probes.end(), manager.probes[index].begin(), manager.probes[index].end());
             manager.probes[index].clear();

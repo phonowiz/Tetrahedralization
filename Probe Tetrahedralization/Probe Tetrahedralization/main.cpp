@@ -18,12 +18,6 @@
 
 std::atomic_uint32_t segment3d::current_id = 0;
 
-void run_collector(collector_manager* manager, int index)
-{
-    manager->collectors[index]();
-}
-
-
 void light_probes(std::vector<probe_info>& probes, const asset_vertex_info& vert_info)
 {
 
@@ -285,6 +279,76 @@ void write_probe_array(std::vector<probe_info>& probes, tetgenio& out, std::vect
 
 }
 
+
+void generate_meshes(asset_vertex_info& vert_info)
+{
+    printf("==========================Print Mesh");
+    printf("var positions = [");
+    for(int i = 0; i < vert_info.positions.size(); ++i)
+    {
+        if(i != 0)
+            printf(",");
+        
+        printf("%f, %f, %f", vert_info.positions[i].x, vert_info.positions[i].y, vert_info.positions[i].z);
+    }
+    
+    printf("];\n");
+    
+    printf("var indeces = [");
+    
+    bool first = true;
+    for(triangle& tri : vert_info.triangles)
+    {
+        if(!first)
+            printf(",");
+        printf("%d, %d, %d", tri.indices.x, tri.indices.y, tri.indices.z);
+        first = false;
+    }
+    
+    printf("];\n");
+    
+    printf("var colors = [");
+    first = true;
+    for(triangle& tri : vert_info.triangles)
+    {
+        if(!first)
+            printf(",");
+        
+        glm::vec3 col0 = vert_info.materials[vert_info.vertex_material[tri[0]]];
+        glm::vec3 col1 = vert_info.materials[vert_info.vertex_material[tri[1]]];
+        glm::vec3 col2 = vert_info.materials[vert_info.vertex_material[tri[2]]];
+        
+        printf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", col0.x, col0.y, col0.z, 1.0f,
+                                                                 col1.x, col1.y, col1.z, 1.0f,
+                                                                 col2.x, col2.y, col2.z, 1.0f);
+        
+        first = false;
+    }
+    
+    printf("var normals = [");
+    first = true;
+    for(triangle& tri : vert_info.triangles)
+    {
+        if(!first)
+            printf(",");
+        
+        glm::vec3 norm0 = vert_info.normals[tri[0]];
+        glm::vec3 norm1 = vert_info.normals[tri[1]];
+        glm::vec3 norm2 = vert_info.normals[tri[2]];
+        
+        printf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", norm0.x, norm0.y, norm0.z, 1.0f,
+                                                                 norm1.x, norm1.y, norm1.z, 1.0f,
+                                                                 norm2.x, norm2.y, norm2.z, 1.0f);
+        
+        first = false;
+    }
+    printf("];\n");
+    
+    printf("var vertexData = new BABYLON.VertexData();\n");
+    printf("vertexData.positions = positions;\n");
+    printf("vertexData.normals = normals;\n");
+    printf("vertexData.colors = colors;\n");
+}
 int main(int argc, const char * argv[]) {
     
     
